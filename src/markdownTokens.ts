@@ -1,6 +1,7 @@
 import { buildDocumentMainContent } from "./documentContentBuilder";
 import { getInputFieldPreference } from "./inputFieldDefinitions";
 import type { DesignPackage, DocumentData, DocumentType, GroupItem } from "./model";
+import { buildScreenLayoutMainContent } from "./screenLayoutMarkdown";
 
 function escapeRegularExpression(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -75,8 +76,12 @@ export function documentSpecificTokens(
   type: DocumentType,
   data: DocumentData,
 ): Record<string, string> {
-  const mainContent = buildDocumentMainContent(design, type, data);
+  const mainContent = type === "S-Layout"
+    ? buildScreenLayoutMainContent(design, data)
+    : buildDocumentMainContent(design, type, data);
   return {
-    MAIN_CONTENT: prefixConfiguredGroupHeadings(design, type, data, mainContent),
+    MAIN_CONTENT: type === "S-Layout"
+      ? mainContent
+      : prefixConfiguredGroupHeadings(design, type, data, mainContent),
   };
 }
