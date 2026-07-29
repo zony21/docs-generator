@@ -158,12 +158,23 @@ export interface LayoutImage {
   previewUrl?: string;
 }
 
+export interface ScreenLayoutSection {
+  id: string;
+  name: string;
+  notes: string;
+  order: number;
+  image?: LayoutImage;
+  items: TableRow[];
+  footerItems: TableRow[];
+}
+
 export interface DocumentData {
   summary: DocumentSummary;
   text: Record<string, string>;
   tables: Record<string, TableRow[]>;
   groups: Record<string, GroupItem[]>;
   images: LayoutImage[];
+  screens: ScreenLayoutSection[];
 }
 
 export type DocumentDataMap = Record<DocumentType, DocumentData>;
@@ -186,6 +197,19 @@ export const BASIC_DOCUMENTS: readonly DocumentType[] = [
   "Relation",
 ];
 
+const JAPANESE_SCREEN_ORDINALS = [
+  "第一画面",
+  "第二画面",
+  "第三画面",
+  "第四画面",
+  "第五画面",
+  "第六画面",
+  "第七画面",
+  "第八画面",
+  "第九画面",
+  "第十画面",
+] as const;
+
 function localDateString(date = new Date()): string {
   const offset = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
@@ -195,6 +219,21 @@ export function getDocumentSummary(type: DocumentType): DocumentSummary {
   return { ...DOCUMENT_SUMMARY_DEFAULTS[type] };
 }
 
+export function defaultScreenLayoutName(index: number): string {
+  return JAPANESE_SCREEN_ORDINALS[index] ?? `第${index + 1}画面`;
+}
+
+export function createScreenLayoutSection(index = 0): ScreenLayoutSection {
+  return {
+    id: createId(),
+    name: defaultScreenLayoutName(index),
+    notes: "",
+    order: index + 1,
+    items: [],
+    footerItems: [],
+  };
+}
+
 function createDocumentData(type: DocumentType): DocumentData {
   return {
     summary: getDocumentSummary(type),
@@ -202,6 +241,7 @@ function createDocumentData(type: DocumentType): DocumentData {
     tables: {},
     groups: {},
     images: [],
+    screens: type === "S-Layout" ? [createScreenLayoutSection()] : [],
   };
 }
 
