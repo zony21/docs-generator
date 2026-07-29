@@ -43,3 +43,5 @@
 
 ### 4.4 Display/edit rules
 {{DISPLAY_EDIT_RULES}}
+
+{{LAYOUT_IMAGE_SECTION}}
