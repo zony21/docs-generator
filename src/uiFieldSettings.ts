@@ -67,20 +67,23 @@ export function renderFieldSettings(type: DocumentType, state: UiState, actions:
     const row = element("div", "field-setting-row");
     const visibleLabel = element("label", "field-setting-row__toggle");
     const checkbox = element("input") as HTMLInputElement;
+    const statusText = element("span", "", preference.enabled ? "表示" : "非表示");
+    const nameInput = element("input") as HTMLInputElement;
     checkbox.type = "checkbox";
     checkbox.checked = preference.enabled;
+    nameInput.value = preference.label;
+    nameInput.placeholder = definition.defaultLabel;
+
     checkbox.addEventListener("change", () => {
+      statusText.textContent = checkbox.checked ? "表示" : "非表示";
       setInputFieldPreference(state.design, type, definition.key, {
         label: nameInput.value,
         enabled: checkbox.checked,
       });
       actions.changed();
     });
-    visibleLabel.append(checkbox, element("span", "", checkbox.checked ? "表示" : "非表示"));
+    visibleLabel.append(checkbox, statusText);
 
-    const nameInput = element("input") as HTMLInputElement;
-    nameInput.value = preference.label;
-    nameInput.placeholder = definition.defaultLabel;
     nameInput.addEventListener("input", () => {
       setInputFieldPreference(state.design, type, definition.key, {
         label: nameInput.value,
