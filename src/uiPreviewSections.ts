@@ -10,10 +10,12 @@ function previewTextFiles(state: UiState): GeneratedTextFile[] {
 
 function resolvePreviewImage(state: UiState, path: string): string | undefined {
   const normalized = path.replace(/^\.\//, "");
-  for (const type of ["S-Layout", "R-Layout"] as const) {
-    for (const image of state.design.documents[type].images) {
-      if (`${type}/${image.outputFileName}` === normalized) return image.previewUrl;
-    }
+  for (const screen of state.design.documents["S-Layout"].screens) {
+    const image = screen.image;
+    if (image && `S-Layout/${image.outputFileName}` === normalized) return image.previewUrl;
+  }
+  for (const image of state.design.documents["R-Layout"].images) {
+    if (`R-Layout/${image.outputFileName}` === normalized) return image.previewUrl;
   }
   return undefined;
 }
