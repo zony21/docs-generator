@@ -2,33 +2,32 @@
 
 ## 1. 目的
 
-本仕様は、Docs Generatorが一機能ごとに生成するMarkdown設計書パッケージの構成、ファイル名、共通見出し、設計書別の内容、空欄処理を定義する。
+本仕様は、一機能ごとに生成するMarkdown設計書パッケージのフォルダ、ファイル、順序、共通構造、画像参照、空欄処理を定義する。
 
-`docs/templates`配下のテンプレートを出力構造の正本とする。本書はテンプレートの意味と生成規則を説明する。
+生成形式の正本はリポジトリ直下の`templates/`とする。
 
 ## 2. 出力単位
 
 - 一回の出力対象は一機能とする。
 - 一機能につき一つのルートフォルダを生成する。
 - `README.md`だけをルート直下へ配置する。
-- その他の設計書はすべて`sheets`配下へ配置する。
+- その他のMarkdownはすべて`sheets/`へ配置する。
 
-## 3. 出力フォルダ
-
-### 3.1 フォルダ名
+## 3. ルートフォルダ名
 
 ```text
 <機能ID>_<機能名>
 ```
 
-### 3.2 正規化
+ファイル名に使用できない文字は`_`へ置換する。
 
-- 前後の空白を削除する。
-- `/`、`\`、`:`, `*`, `?`, `"`, `<`, `>`, `|`は`_`へ置換する。
-- 連続する空白とアンダースコアを整理する。
-- 末尾のピリオドと空白を削除する。
-- 機能IDがない場合は出力エラーとする。
-- 機能名がない場合は出力エラーとする。
+対象文字:
+
+```text
+/ \ : * ? " < > |
+```
+
+機能IDまたは機能名が空の場合は出力しない。
 
 ## 4. 出力構成
 
@@ -42,14 +41,22 @@
     ├── FuncSpec.md
     ├── FuncDetail.md
     ├── Relation.md
+    ├── S-Layout.md
+    ├── S-Layout/
+    │   └── screen-overview.png
+    ├── R-Layout.md
+    ├── R-Layout/
+    │   └── report-sample.png
     └── 選択された追加設計書.md
 ```
 
+画像フォルダは画像が存在する場合だけ生成する。
+
 ## 5. 設計書区分
 
-### 5.1 基本設計書
+### 5.1 基本6設計書
 
-次の6ファイルは新規作成時に選択済みとする。
+初期選択する。
 
 1. `Hist.md`
 2. `Outline_A.md`
@@ -58,11 +65,9 @@
 5. `FuncDetail.md`
 6. `Relation.md`
 
-利用者が解除する場合は警告する。未選択の場合は生成しない。
+### 5.2 条件付き6設計書
 
-### 5.2 条件付き設計書
-
-必要な場合だけ選択・生成する。
+利用者が必要な場合だけ選択する。
 
 1. `S-Layout.md`
 2. `R-Layout.md`
@@ -71,9 +76,11 @@
 5. `Others.md`
 6. `Footnote.md`
 
-## 6. ファイル順
+未選択の設計書は生成しない。
 
-READMEの索引と画面上の表示順は次とする。
+## 6. 出力順
+
+README索引と画面上の表示順は次とする。
 
 1. Hist
 2. Outline_A
@@ -96,47 +103,27 @@ READMEの索引と画面上の表示順は次とする。
 
 1. H1タイトル
 2. `## How to use this folder`
-3. `## Feature`
-4. `## Document index`
+3. `## Document information`
+4. `## Sheet index`
 5. `## Notes`
 
 ### 7.2 タイトル
 
 ```markdown
-# <FeatureId> <FeatureName> 設計書
+# <機能ID> <機能名> 設計書
 ```
 
-### 7.3 How to use this folder
-
-テンプレートに定義された2～3個の案内を出力する。
-
-### 7.4 Feature
-
-次を出力する。
-
-- system_name
-- module_name
-- module_id
-- feature_id
-- feature_name
-- feature_type
-- revision
-- author
-- generated_at
-
-### 7.5 Document index
+### 7.3 Sheet index
 
 ```markdown
-| Document | File |
+| Sheet | Design document |
 | --- | --- |
 | Hist | [sheets/Hist.md](sheets/Hist.md) |
 ```
 
-実際に生成したファイルだけを掲載する。索引と実ファイルは1対1で一致させる。
+実際に生成したファイルだけを掲載し、索引と実ファイルを1対1で一致させる。
 
 ## 8. 各設計書の共通構造
-
-提供テンプレートに近い構造を維持し、Excel抽出用の項目だけを直接作成用へ置き換える。
 
 ```markdown
 # <DocumentType>
@@ -148,60 +135,34 @@ READMEの索引と画面上の表示順は次とする。
 ## 3. Document summary
 
 ## 4. Main content
-
-## 5. Blank / N/A handling
 ```
 
-### 8.1 Document metadata
+Excel抽出元を表す項目は出力しない。
 
-- Package name
-- Document type
-- Output file
+次へ置き換える。
+
+- Package
+- Document
+- File
 - Generated at
-- Template version
+- Function ID
+- Function Name
 
-### 8.2 Common metadata
+## 9. 共通メタデータ
 
 - System Name
 - Module Name
 - Module ID
-- Feature ID
-- Feature Name
+- Function ID
+- Function Name
 - Date
 - Rev
 - Doc Number
 - Author
 
-### 8.3 Document summary
+共通情報は利用者が一度だけ入力し、選択された全設計書へ反映する。
 
-- Title
-- Screen / component name
-- Event / check / function name
-- Timing
-- Notes
-
-各設計書で意味の薄い項目は、フォーム上では非表示にできる。ただし互換性を優先する出力モードでは共通項目を残す。
-
-### 8.4 Main content
-
-設計書固有の見出し、表、処理順を出力する。
-
-### 8.5 Blank / N/A handling
-
-テンプレートの運用説明として次を残す。
-
-- If no concrete values exist, write exactly: No concrete entries.
-- Do not infer missing values.
-- Do not add implementation assumptions.
-
-生成時の実際の扱いは次とする。
-
-- 未選択設計書は生成しない。
-- 主要内容が空の選択済み設計書は警告する。
-- 利用者が警告を許可して出力した場合は`No concrete entries.`を出力する。
-- 意味のある表枠は保持する。
-
-## 9. Hist.md
+## 10. Hist.md
 
 ### Main content
 
@@ -209,64 +170,60 @@ READMEの索引と画面上の表示順は次とする。
 2. 改訂履歴表
 3. `### 4.2 Additional notes`
 
-### 表
+表:
 
-| Creation/Update Date | Author | Rev. | Target Document/Area | Change Note | Approval Date | Approval By |
+| Creation/Update Date | Author | Rev. | Target Sheet/Area | Change Note | Approval Date | Approval By |
 | --- | --- | --- | --- | --- | --- | --- |
 
-新規作成時は、作成日、作成者、Rev、全体、新規作成を初期行として生成する。
-
-## 10. Outline_A.md
-
-### Main content
+## 11. Outline_A.md
 
 1. `### 4.1 System/module purpose`
 2. `### 4.2 Scope and target users/process`
 3. `### 4.3 High-level operation flow`
 4. `### 4.4 Preconditions/postconditions`
 
-操作・処理フローは入力順を維持し、番号付きリストで出力する。
+フローは入力順を維持して番号付きリストへ変換する。
 
-## 11. Outline_B.md
-
-### Main content
+## 12. Outline_B.md
 
 1. `### 4.1 Processing style/classification`
 2. `### 4.2 CRUD / operation categories`
 3. `### 4.3 Related tables/masters/interfaces`
 4. `### 4.4 Operational constraints and remarks`
 
-CRUDと関連資源の行順は入力順を維持する。
-
-## 12. S-Layout.md
-
-### Main content
+## 13. S-Layout.md
 
 1. `### 4.1 Screen sections/areas`
 2. `### 4.2 Control list`
 3. `### 4.3 Control properties`
 4. `### 4.4 Display/edit rules`
+5. 画像がある場合だけ`### 4.5 Layout images`
 
-コントロールIDは一覧と属性表の関連キーとして扱う。
+画像参照例:
 
-## 13. R-Layout.md
+```markdown
+![画面全体](./S-Layout/screen-overview.png)
+```
 
-### Main content
+## 14. R-Layout.md
 
 1. `### 4.1 Layout blocks and areas`
 2. `### 4.2 Output/display item list`
 3. `### 4.3 Column-level definitions`
 4. `### 4.4 Rendering/output behavior notes`
+5. 画像がある場合だけ`### 4.5 Layout images`
 
-## 14. FuncSpec.md
+画像参照例:
 
-### Main content
+```markdown
+![帳票出力例](./R-Layout/report-sample.png)
+```
+
+## 15. FuncSpec.md
 
 1. `### 4.1 Screen/function unit`
 2. `### 4.2 Trigger/timing`
 3. `### 4.3 Action details`
-
-機能単位が複数ある場合は、`4.1`以下を機能番号付きのサブセクションとして繰り返す。
 
 各アクションに次を出力する。
 
@@ -275,120 +232,90 @@ CRUDと関連資源の行順は入力順を維持する。
 3. Success path
 4. Error/interruption path
 
-空のエラー処理を推測して追加しない。
+入力されていないエラー処理を補完しない。
 
-## 15. Event.md
-
-### Main content
+## 16. Event.md
 
 1. `### 4.1 Event list`
 2. イベント一覧表
 3. `### 4.2 Additional event notes`
 
-### 表
+表:
 
 | Event Name | Trigger | Target Function/Process | Remarks |
 | --- | --- | --- | --- |
 
-必要な場合は、発生条件と処理内容の列を追加できる拡張モードを用意する。標準モードは提供テンプレートの4列を維持する。
+## 17. FuncDetail.md
 
-## 16. FuncDetail.md
-
-### Main content
-
-1. `### 4.1 Processing unit`
+1. `### 4.1 Processing units`
 2. `### 4.2 Internal flow`
 3. `### 4.3 Cross references`
 
-処理単位が複数ある場合は繰り返す。
+`try`、`catch`、`finally`は入力がある部分だけ出力する。
 
-`try`、`catch`、`finally`は入力があるブロックだけ出力する。関連設計書リンクは選択済みファイルだけを出力する。
-
-## 17. Relation.md
-
-### Main content
+## 18. Relation.md
 
 1. `### 4.1 Transfer Source`
 2. `### 4.2 Transfer Destination`
-3. `### 4.3 Mapping`
-4. `### 4.4 SQL definition`
+3. `### 4.3 SQL definition`
 
-提供テンプレートと同様に、転送元と転送先を分離する。複数行SQLは必ず`sql` fenced code blockで出力し、SQL内容を自動変更しない。
+Transfer SourceとTransfer Destinationを分離する。
 
-## 18. Check.md
+複数行SQLは`sql`コードフェンスへ入れ、内容を変更しない。
 
-### Main content
+## 19. Check.md
 
 1. `### 4.1 Validation target context`
 2. `### 4.2 Validation table`
 
-### 標準表
+表:
 
 | No. | Check Item | Type | Detail | Message ID | Message Arguments |
 | --- | --- | --- | --- | --- | --- |
 
-表枠自体に意味があるため、互換モードではデータがなくてもヘッダーを保持する。
-
-## 19. Others.md
-
-### Main content
+## 20. Others.md
 
 1. `### 4.1 Shared constants/definitions`
 2. `### 4.2 Option/function key/helper mappings`
 3. `### 4.3 Supplemental operational notes`
 
-## 20. Footnote.md
-
-### Main content
+## 21. Footnote.md
 
 1. `### 4.1 Reference terms and annotations`
 2. `### 4.2 Abbreviations/codes`
 3. `### 4.3 Supplemental notes`
 
-AIやツールによる用語説明の自動追加は行わない。
+入力されていない用語説明を追加しない。
 
-## 21. 文字とMarkdown整形
+## 22. 空欄処理
 
-- 文字コード：UTF-8
-- 改行：LF
-- ファイル末尾：改行あり
-- 見出し前後：空行を1行
-- Markdown表：ヘッダー区切り必須
-- 表セル内の`|`：エスケープ
-- 複数行SQL：`sql`コードブロック
-- 通常コード：言語が判明する場合は言語名を付与
-- 入力文言の業務的な意味を変更しない
-- 利用者の文章を勝手に要約しない
+- 未選択設計書は生成しない。
+- 任意の単一値は空文字へ置換する。
+- 空の本文は空文字へ置換する。
+- 表の見出しはテンプレートに残す。
+- EventとCheckはデータ行がなくても表見出しを残せる。
+- 画像がない場合は画像セクションと画像フォルダを生成しない。
+- 生成物へテンプレートトークンを残さない。
 
-## 22. 相互参照
+Excel抽出用の`No concrete entries in source sheet.`は使用しない。
 
-`sheets`内の設計書同士は、同階層の相対リンクを使用する。
+## 23. Markdown整形
 
-```markdown
-[Check.md](Check.md)
-```
+- 文字コード: UTF-8
+- 改行: LF
+- ファイル末尾: 改行あり
+- 表セル内の`|`: `\|`へ変換
+- 表セル内の改行: `<br>`へ変換
+- SQL: 改行とインデントを維持
+- ファイル間リンク: 相対パス
+- 入力文章: 自動要約、補完、言い換えを行わない
 
-READMEからは`sheets/`付きの相対リンクを使用する。
+## 24. 検証
 
-```markdown
-[sheets/Check.md](sheets/Check.md)
-```
+ZIP出力前に次を検証する。
 
-未選択ファイルへのリンクは生成しない。
-
-## 23. テンプレートバージョン
-
-- マニフェストに`templateVersion`を持つ。
-- 生成ファイルのDocument metadataへバージョンを出力する。
-- 見出し、表ヘッダー、解釈規則を変更した場合はバージョンを更新する。
-- 文言修正のみの場合はパッチバージョン、互換性のある項目追加はマイナーバージョン、解析互換性を壊す変更はメジャーバージョンを上げる。
-
-## 24. 禁止事項
-
-- 選択されていない設計書の生成
-- README以外のルート直下配置
-- 入力されていない要件の推測
-- SQLロジックの変更
-- リンク先が存在しない相互参照
-- README索引と実ファイルの不一致
-- テンプレートとコードへの見出し構造の二重管理
+- README索引とMarkdownファイルが一致する。
+- 未置換トークンがない。
+- Markdownが`sheets/`以外へ出力されていない。
+- 画像参照先がZIP内に存在する。
+- ZIP内の画像が正しい同名フォルダにある。
