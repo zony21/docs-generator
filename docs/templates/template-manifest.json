@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "1.0.0",
+  "templateVersion": "1.1.0",
+  "rootTemplate": "README_TEMPLATE.md",
+  "documents": [
+    {
+      "type": "Hist",
+      "displayName": "改訂履歴",
+      "templatePath": "sheets/Hist.md",
+      "outputPath": "sheets/Hist.md",
+      "assetDirectory": "sheets/Hist",
+      "formSchemaId": "hist-v1",
+      "requiredByDefault": true,
+      "order": 10
+    },
+    {
+      "type": "Outline_A",
+      "displayName": "概要A",
+      "templatePath": "sheets/Outline_A.md",
+      "outputPath": "sheets/Outline_A.md",
+      "assetDirectory": "sheets/Outline_A",
+      "formSchemaId": "outline-a-v1",
+      "requiredByDefault": true,
+      "order": 20
+    },
+    {
+      "type": "Outline_B",
+      "displayName": "概要B",
+      "templatePath": "sheets/Outline_B.md",
+      "outputPath": "sheets/Outline_B.md",
+      "assetDirectory": "sheets/Outline_B",
+      "formSchemaId": "outline-b-v1",
+      "requiredByDefault": true,
+      "order": 30
+    },
+    {
+      "type": "S-Layout",
+      "displayName": "画面レイアウト",
+      "templatePath": "sheets/S-Layout.md",
+      "outputPath": "sheets/S-Layout.md",
+      "assetDirectory": "sheets/S-Layout",
+      "formSchemaId": "screen-layout-v1",
+      "requiredByDefault": false,
+      "order": 40
+    },
+    {
+      "type": "R-Layout",
+      "displayName": "帳票レイアウト",
+      "templatePath": "sheets/R-Layout.md",
+      "outputPath": "sheets/R-Layout.md",
+      "assetDirectory": "sheets/R-Layout",
+      "formSchemaId": "report-layout-v1",
+      "requiredByDefault": false,
+      "order": 50
+    },
+    {
+      "type": "FuncSpec",
+      "displayName": "機能仕様",
+      "templatePath": "sheets/FuncSpec.md",
+      "outputPath": "sheets/FuncSpec.md",
+      "assetDirectory": "sheets/FuncSpec",
+      "formSchemaId": "func-spec-v1",
+      "requiredByDefault": true,
+      "order": 60
+    },
+    {
+      "type": "Event",
+      "displayName": "イベント定義",
+      "templatePath": "sheets/Event.md",
+      "outputPath": "sheets/Event.md",
+      "assetDirectory": "sheets/Event",
+      "formSchemaId": "event-v1",
+      "requiredByDefault": false,
+      "order": 70
+    },
+    {
+      "type": "FuncDetail",
+      "displayName": "機能詳細",
+      "templatePath": "sheets/FuncDetail.md",
+      "outputPath": "sheets/FuncDetail.md",
+      "assetDirectory": "sheets/FuncDetail",
+      "formSchemaId": "func-detail-v1",
+      "requiredByDefault": true,
+      "order": 80
+    },
+    {
+      "type": "Relation",
+      "displayName": "データ関連",
+      "templatePath": "sheets/Relation.md",
+      "outputPath": "sheets/Relation.md",
+      "assetDirectory": "sheets/Relation",
+      "formSchemaId": "relation-v1",
+      "requiredByDefault": true,
+      "order": 90
+    },
+    {
+      "type": "Check",
+      "displayName": "チェック仕様",
+      "templatePath": "sheets/Check.md",
+      "outputPath": "sheets/Check.md",
+      "assetDirectory": "sheets/Check",
+      "formSchemaId": "check-v1",
+      "requiredByDefault": false,
+      "order": 100
+    },
+    {
+      "type": "Others",
+      "displayName": "その他定義",
+      "templatePath": "sheets/Others.md",
+      "outputPath": "sheets/Others.md",
+      "assetDirectory": "sheets/Others",
+      "formSchemaId": "others-v1",
+      "requiredByDefault": false,
+      "order": 110
+    },
+    {
+      "type": "Footnote",
+      "displayName": "注釈・用語",
+      "templatePath": "sheets/Footnote.md",
+      "outputPath": "sheets/Footnote.md",
+      "assetDirectory": "sheets/Footnote",
+      "formSchemaId": "footnote-v1",
+      "requiredByDefault": false,
+      "order": 120
+    }
+  ],
+  "recommendationRules": [
+    {
+      "featureType": "screen",
+      "documents": ["S-Layout", "Event", "Check", "Footnote"]
+    },
+    {
+      "featureType": "api",
+      "documents": ["Event", "Check", "Footnote"]
+    },
+    {
+      "featureType": "batch",
+      "documents": ["Event", "Check", "Others", "Footnote"]
+    },
+    {
+      "featureType": "report",
+      "documents": ["R-Layout", "Check", "Footnote"]
+    },
+    {
+      "featureType": "common",
+      "documents": ["Check", "Others", "Footnote"]
+    },
+    {
+      "featureType": "other",
+      "documents": []
+    }
+  ],
+  "imageRules": {
+    "supportedExtensions": ["png", "jpg", "jpeg", "webp", "svg"],
+    "maxFileSizeBytes": 10485760,
+    "maxFilesPerDocument": 30,
+    "maxPackageSizeBytes": 104857600,
+    "directoryRule": "sheets/<DocumentType>",
+    "createEmptyAssetDirectory": false
+  }
+}
