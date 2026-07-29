@@ -5,7 +5,6 @@ import { documentSpecificTokens } from "./markdownTokens";
 import {
   commonTokens,
   findUnresolvedTokens,
-  normalizeMarkdown,
   packageRootName,
   replaceTokens,
   summaryTokens,
@@ -40,15 +39,6 @@ export function validateDesignPackage(design: DesignPackage): string[] {
   return errors;
 }
 
-function filterFuncDetailReferences(content: string, selected: ReadonlySet<DocumentType>): string {
-  return content.split("\n").filter((line) => {
-    if (line.startsWith("- Check:")) return selected.has("Check");
-    if (line.startsWith("- Others:")) return selected.has("Others");
-    if (line.startsWith("- Relation:")) return selected.has("Relation");
-    return true;
-  }).join("\n");
-}
-
 function assertResolved(label: string, content: string): void {
   const unresolved = findUnresolvedTokens(content);
   if (unresolved.length > 0) throw new Error(`${label}: 未置換トークンがあります: ${unresolved.join(", ")}`);
@@ -56,14 +46,11 @@ function assertResolved(label: string, content: string): void {
 
 function buildDocument(design: DesignPackage, type: DocumentType, generatedAt: string): GeneratedTextFile {
   const data = design.documents[type];
-  let content = replaceTokens(getDocumentTemplate(type), {
+  const content = replaceTokens(getDocumentTemplate(type), {
     ...commonTokens(design, generatedAt),
     ...summaryTokens(data),
-    ...documentSpecificTokens(type, data),
+    ...documentSpecificTokens(design, type, data),
   });
-  if (type === "FuncDetail") {
-    content = normalizeMarkdown(filterFuncDetailReferences(content, new Set(design.selectedDocuments)));
-  }
   assertResolved(type, content);
   return { kind: "text", path: getDocumentDefinition(type).outputPath, content };
 }
