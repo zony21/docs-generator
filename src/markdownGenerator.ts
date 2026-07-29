@@ -1,6 +1,6 @@
 import { getDocumentDefinition, sortDocumentTypes } from "./documentDefinitions";
 import { imageAssetPath, isLayoutDocument } from "./imageAssets";
-import type { DesignPackage, DocumentType } from "./model";
+import type { DesignPackage, DocumentType, LayoutImage } from "./model";
 import { documentSpecificTokens } from "./markdownTokens";
 import {
   commonTokens,
@@ -18,6 +18,13 @@ export interface GeneratedBinaryFile { kind: "binary"; path: string; content: Fi
 export type GeneratedFile = GeneratedTextFile | GeneratedBinaryFile;
 export interface GenerationResult { rootDirectory: string; files: GeneratedFile[] }
 
+function layoutImages(design: DesignPackage, type: "S-Layout" | "R-Layout"): LayoutImage[] {
+  if (type === "S-Layout") {
+    return design.documents[type].screens.flatMap((screen) => screen.image ? [screen.image] : []);
+  }
+  return design.documents[type].images;
+}
+
 export function validateDesignPackage(design: DesignPackage): string[] {
   const errors: string[] = [];
   const required: Array<[string, string]> = [
@@ -32,7 +39,7 @@ export function validateDesignPackage(design: DesignPackage): string[] {
   if (design.selectedDocuments.length === 0) errors.push("作成する設計書を1件以上選択してください。");
   if (!packageRootName(design)) errors.push("出力フォルダ名を作成できません。機能IDと機能名を確認してください。");
   for (const type of ["S-Layout", "R-Layout"] as const) {
-    for (const image of design.documents[type].images) {
+    for (const image of layoutImages(design, type)) {
       if (!image.file) errors.push(`${type}の画像「${image.title || image.outputFileName}」を再選択してください。`);
     }
   }
@@ -81,14 +88,14 @@ export function generateDesignPackage(
   const binaryFiles: GeneratedBinaryFile[] = [];
   for (const type of selected) {
     if (!isLayoutDocument(type)) continue;
-    for (const image of [...design.documents[type].images].sort((a, b) => a.order - b.order)) {
+    for (const image of [...layoutImages(design, type)].sort((left, right) => left.order - right.order)) {
       if (image.file) binaryFiles.push({ kind: "binary", path: imageAssetPath(type, image), content: image.file });
     }
   }
   const paths = new Set([...textFiles, ...binaryFiles].map((file) => file.path));
   for (const type of selected) {
     if (!isLayoutDocument(type)) continue;
-    for (const image of design.documents[type].images) {
+    for (const image of layoutImages(design, type)) {
       if (image.file && !paths.has(imageAssetPath(type, image))) throw new Error(`${type}: 画像参照先が出力対象にありません。`);
     }
   }
