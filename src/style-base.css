@@ -13,6 +13,7 @@
   --primary-soft: #edf1ff;
   --danger: #c43d4b;
   --shadow: 0 16px 42px rgba(32, 52, 89, 0.08);
+  --content-width: 1480px;
 }
 
 * { box-sizing: border-box; }
@@ -23,7 +24,7 @@ button:disabled { cursor: wait; opacity: 0.65; }
 
 .app-shell { min-height: 100vh; padding-bottom: 96px; }
 .hero { background: radial-gradient(circle at 80% 0%, rgba(116, 144, 255, 0.35), transparent 34%), linear-gradient(135deg, #17265a, #304eb7 58%, #4469dd); color: white; }
-.hero__inner { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 52px 0 44px; display: flex; justify-content: space-between; gap: 32px; align-items: flex-end; }
+.hero__inner { width: min(var(--content-width), calc(100% - 40px)); margin: 0 auto; padding: 52px 0 44px; display: flex; justify-content: space-between; gap: 32px; align-items: flex-end; }
 .hero__eyebrow { margin: 0 0 10px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.18em; color: #cbd5ff; }
 .hero h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.45rem); letter-spacing: -0.045em; }
 .hero__description { max-width: 760px; margin: 16px 0 0; line-height: 1.8; color: #e9edff; }
@@ -32,7 +33,7 @@ button:disabled { cursor: wait; opacity: 0.65; }
 .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #61db9f; box-shadow: 0 0 0 4px rgba(97,219,159,.16); display: inline-block; }
 .status-dot--muted { background: #8b98ac; box-shadow: none; }
 
-.main-content { width: min(1180px, calc(100% - 40px)); margin: -18px auto 0; display: grid; gap: 22px; }
+.main-content { width: min(var(--content-width), calc(100% - 40px)); margin: -18px auto 0; display: grid; gap: 22px; }
 .panel { background: var(--panel); border: 1px solid rgba(207, 217, 231, .9); border-radius: 18px; box-shadow: var(--shadow); padding: 28px; }
 .section-heading { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 24px; }
 .section-heading__number { flex: none; width: 34px; height: 34px; border-radius: 11px; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; font-weight: 800; }
@@ -69,4 +70,3 @@ input:focus, textarea:focus, select:focus { border-color: #6783e7; box-shadow: 0
 .document-choice small { margin-top: 3px; color: var(--muted); }
 .badge { padding: 3px 7px; border-radius: 999px; background: #edf0f4; color: #687386; font-size: .68rem; font-weight: 800; }
 .badge--basic { background: #dfe7ff; color: #3555bd; }
-

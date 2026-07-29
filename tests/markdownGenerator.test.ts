@@ -65,10 +65,28 @@ describe("markdown generator", () => {
       "sheets/Relation.md",
     ]);
     expect(textFiles[0].content).toContain("[sheets/Relation.md](sheets/Relation.md)");
+    expect(textFiles.find((file) => file.path === "sheets/Hist.md")?.content).toContain("- Title: 改版履歴 History");
     expect(textFiles.find((file) => file.path === "sheets/Outline_A.md")?.content).toContain("1. 条件入力");
+    expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("- Event / check / function name: Data transfer / I/O mapping");
     expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("```sql\nSELECT *\nFROM T_CONTRACT\n```");
     for (const file of textFiles) {
       expect(findUnresolvedTokens(file.content)).toEqual([]);
+    }
+  });
+
+  it("uses fixed sheet summaries instead of draft overrides", () => {
+    const design = validDesign();
+    design.selectedDocuments = ["FuncDetail"];
+    design.documents.FuncDetail.summary.sheetTitle = "変更されたタイトル";
+    design.documents.FuncDetail.summary.timing = "変更されたタイミング";
+    const result = generateDesignPackage(design);
+    const detail = result.files.find((file) => file.path === "sheets/FuncDetail.md");
+    expect(detail?.kind).toBe("text");
+    if (detail?.kind === "text") {
+      expect(detail.content).toContain("- Title: 機能詳細説明 Explanation of Function detail");
+      expect(detail.content).toContain("- Timing: WebAPI reception");
+      expect(detail.content).not.toContain("変更されたタイトル");
+      expect(detail.content).not.toContain("変更されたタイミング");
     }
   });
 
