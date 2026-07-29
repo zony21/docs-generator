@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { setInputFieldPreference } from "../src/inputFieldDefinitions";
 import {
   escapeMarkdownCell,
   findUnresolvedTokens,
@@ -22,6 +23,12 @@ function validDesign() {
     author: "久野",
   });
   return design;
+}
+
+function textFileContent(design: ReturnType<typeof validDesign>, path: string): string {
+  const file = generateDesignPackage(design).files.find((candidate) => candidate.path === path);
+  expect(file?.kind).toBe("text");
+  return file?.kind === "text" ? file.content : "";
 }
 
 describe("markdown generator", () => {
@@ -65,9 +72,9 @@ describe("markdown generator", () => {
       "sheets/Relation.md",
     ]);
     expect(textFiles[0].content).toContain("[sheets/Relation.md](sheets/Relation.md)");
-    expect(textFiles.find((file) => file.path === "sheets/Hist.md")?.content).toContain("- Title: 改版履歴 History");
+    expect(textFiles.find((file) => file.path === "sheets/Hist.md")?.content).toContain("- タイトル: 改版履歴 History");
     expect(textFiles.find((file) => file.path === "sheets/Outline_A.md")?.content).toContain("1. 条件入力");
-    expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("- Event / check / function name: Data transfer / I/O mapping");
+    expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("- イベント・チェック・機能名: Data transfer / I/O mapping");
     expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("```sql\nSELECT *\nFROM T_CONTRACT\n```");
     for (const file of textFiles) {
       expect(findUnresolvedTokens(file.content)).toEqual([]);
@@ -79,13 +86,68 @@ describe("markdown generator", () => {
     design.selectedDocuments = ["FuncDetail"];
     design.documents.FuncDetail.summary.sheetTitle = "受信処理の機能詳細";
     design.documents.FuncDetail.summary.timing = "メッセージ受信時";
-    const result = generateDesignPackage(design);
-    const detail = result.files.find((file) => file.path === "sheets/FuncDetail.md");
-    expect(detail?.kind).toBe("text");
-    if (detail?.kind === "text") {
-      expect(detail.content).toContain("- Title: 受信処理の機能詳細");
-      expect(detail.content).toContain("- Timing: メッセージ受信時");
+    const detail = textFileContent(design, "sheets/FuncDetail.md");
+    expect(detail).toContain("- タイトル: 受信処理の機能詳細");
+    expect(detail).toContain("- タイミング: メッセージ受信時");
+  });
+
+  it("omits disabled text fields and uses edited Japanese labels", () => {
+    const design = validDesign();
+    design.selectedDocuments = ["Outline_A"];
+    design.documents.Outline_A.text.purpose = "出力してはいけない目的";
+    design.documents.Outline_A.text.scopeTarget = "契約管理担当者";
+    setInputFieldPreference(design, "Outline_A", "purpose", { label: "目的", enabled: false });
+    setInputFieldPreference(design, "Outline_A", "scopeTarget", { label: "利用対象", enabled: true });
+
+    const outline = textFileContent(design, "sheets/Outline_A.md");
+    expect(outline).not.toContain("出力してはいけない目的");
+    expect(outline).not.toContain("### 4.1 目的");
+    expect(outline).toContain("### 4.1 利用対象");
+    expect(outline).toContain("契約管理担当者");
+  });
+
+  it("omits disabled table columns and removes a table when all columns are disabled", () => {
+    const design = validDesign();
+    design.selectedDocuments = ["Outline_B"];
+    design.documents.Outline_B.tables.crud = [{ category: "Read", description: "契約一覧を取得" }];
+    design.documents.Outline_B.tables.resources = [{ type: "Table", name: "T_CONTRACT", notes: "契約" }];
+    setInputFieldPreference(design, "Outline_B", "crud.category", { label: "区分", enabled: false });
+    setInputFieldPreference(design, "Outline_B", "crud.description", { label: "処理内容", enabled: true });
+    for (const key of ["resources.type", "resources.name", "resources.notes"]) {
+      setInputFieldPreference(design, "Outline_B", key, { label: key, enabled: false });
     }
+
+    const outline = textFileContent(design, "sheets/Outline_B.md");
+    expect(outline).toContain("| 処理内容 |");
+    expect(outline).toContain("| 契約一覧を取得 |");
+    expect(outline).not.toContain("| 区分 |");
+    expect(outline).not.toContain("Read");
+    expect(outline).not.toContain("関連テーブル・マスタ・インターフェース");
+    expect(outline).not.toContain("T_CONTRACT");
+  });
+
+  it("does not leak disabled group values", () => {
+    const design = validDesign();
+    design.selectedDocuments = ["FuncDetail"];
+    design.documents.FuncDetail.groups.units = [{
+      processingName: "非表示処理名",
+      methodName: "handleRequest",
+      functionType: "service",
+      summary: "受信処理",
+      normalFlow: "通常処理",
+      exceptionFlow: "例外処理",
+      finallyFlow: "終了処理",
+      relatedDocuments: "Relation.md",
+    }];
+    setInputFieldPreference(design, "FuncDetail", "units.processingName", { label: "処理名", enabled: false });
+    setInputFieldPreference(design, "FuncDetail", "units.methodName", { label: "メソッド", enabled: true });
+    setInputFieldPreference(design, "FuncDetail", "units.exceptionFlow", { label: "異常時", enabled: false });
+
+    const detail = textFileContent(design, "sheets/FuncDetail.md");
+    expect(detail).not.toContain("非表示処理名");
+    expect(detail).not.toContain("例外処理");
+    expect(detail).toContain("- メソッド: handleRequest");
+    expect(detail).toContain("**通常処理（try）**");
   });
 
   it("generates all selected documents in the defined order", () => {
@@ -99,14 +161,10 @@ describe("markdown generator", () => {
   it("removes unselected cross references", () => {
     const design = validDesign();
     design.selectedDocuments = ["FuncDetail"];
-    const result = generateDesignPackage(design);
-    const detail = result.files.find((file) => file.path === "sheets/FuncDetail.md");
-    expect(detail?.kind).toBe("text");
-    if (detail?.kind === "text") {
-      expect(detail.content).not.toContain("Check.md");
-      expect(detail.content).not.toContain("Others.md");
-      expect(detail.content).not.toContain("Relation.md");
-    }
+    const detail = textFileContent(design, "sheets/FuncDetail.md");
+    expect(detail).not.toContain("Check.md");
+    expect(detail).not.toContain("Others.md");
+    expect(detail).not.toContain("Relation.md");
   });
 
   it("sanitizes the package root name", () => {
