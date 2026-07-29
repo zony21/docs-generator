@@ -12,7 +12,9 @@ import {
 export const STORAGE_KEY = "docs-generator:draft:v1";
 
 function imageWithoutFile(image: LayoutImage): LayoutImage {
-  const { file: _file, previewUrl: _previewUrl, ...metadata } = image;
+  const metadata = { ...image };
+  delete metadata.file;
+  delete metadata.previewUrl;
   return metadata;
 }
 
