@@ -2,39 +2,40 @@
 
 ## 1. 目的
 
-本ディレクトリは、Markdownを正式な設計書として直接作成するための「Docs Generator」の設計資料を管理する。
+本ディレクトリは、Excelを介さず、一機能分のMarkdown設計書を直接作成する「Docs Generator」の正式な設計資料を管理する。
 
-本ツールでは、Excelを作成してからMarkdownへ変換する工程を廃止し、一機能ごとに必要項目を選択・入力することで、設計書一式を直接生成する。
+初期実装は、必要な設計書を選択し、必要項目を入力して、テンプレートに近いMarkdown一式をZIP出力する小規模なブラウザ完結型ツールとする。
 
-## 2. 設計方針
+## 2. MVP方針
 
 - Markdownを正式な設計成果物として扱う。
 - 一機能につき一つの設計書パッケージを生成する。
-- 基本設計書を初期選択し、機能の種類に応じて追加設計書を自動提案する。
-- 共通項目は一度だけ入力し、複数ファイルへ自動反映する。
-- Excelを前提とした項目名や抽出メタデータは廃止する。
-- 提供テンプレートを出力構造の正本とする。
-- 入力途中の自動保存、プレビュー、検証、ZIP出力により操作を最小化する。
-- レイアウト画像は対象Markdownと同名のフォルダへ格納する。
-- 出力後はMarkdownファイルを正本とし、再読込して編集できることを目標とする。
+- 基本6設計書を初期選択する。
+- 条件付き6設計書は利用者が必要なものだけ選択する。
+- 共通項目は一度だけ入力し、全設計書へ反映する。
+- 出力形式はリポジトリ直下の`templates/`を正本とする。
+- 画面は1画面とし、バックエンドとデータベースを持たない。
+- テンプレートは単純なトークン置換で展開する。
+- 画像はS-LayoutとR-Layoutだけに添付できる。
+- 画像は対象Markdownと同名のフォルダへ格納する。
+- 初期実装ではMarkdown再読込、GitHub連携、AI生成を行わない。
 
 ## 3. 資料一覧
 
 | 資料 | 内容 |
 | --- | --- |
-| [01_PRODUCT_REQUIREMENTS.md](01_PRODUCT_REQUIREMENTS.md) | 背景、目的、対象範囲、要件、受入条件 |
-| [02_FUNCTIONAL_DESIGN.md](02_FUNCTIONAL_DESIGN.md) | 画面、操作フロー、入力項目、機能仕様 |
-| [03_SYSTEM_DESIGN.md](03_SYSTEM_DESIGN.md) | 技術構成、内部モデル、テンプレート駆動生成、保存方式 |
-| [04_MARKDOWN_OUTPUT_SPEC.md](04_MARKDOWN_OUTPUT_SPEC.md) | 出力フォルダ、設計書種類、各Markdownの生成規約 |
-| [05_IMPLEMENTATION_PLAN.md](05_IMPLEMENTATION_PLAN.md) | 実装順序、作業単位、完了条件 |
-| [06_TEST_PLAN.md](06_TEST_PLAN.md) | テスト観点、検証項目、品質基準 |
-| [07_IMAGE_ASSET_SPEC.md](07_IMAGE_ASSET_SPEC.md) | レイアウト画像の添付、保存、表示、再読込仕様 |
-| [08_IMAGE_IMPLEMENTATION_PLAN.md](08_IMAGE_IMPLEMENTATION_PLAN.md) | 画像対応の実装順序と完了条件 |
-| [templates/README.md](templates/README.md) | テンプレート一式の管理・変更ルール |
+| [01_PRODUCT_REQUIREMENTS.md](01_PRODUCT_REQUIREMENTS.md) | 背景、目的、対象範囲、要件、対象外 |
+| [02_FUNCTIONAL_DESIGN.md](02_FUNCTIONAL_DESIGN.md) | 1画面構成、入力、選択、プレビュー、出力 |
+| [03_SYSTEM_DESIGN.md](03_SYSTEM_DESIGN.md) | 技術構成、データモデル、テンプレート展開、保存方式 |
+| [04_MARKDOWN_OUTPUT_SPEC.md](04_MARKDOWN_OUTPUT_SPEC.md) | 出力階層、設計書種類、Markdown生成規則 |
+| [05_IMPLEMENTATION_PLAN.md](05_IMPLEMENTATION_PLAN.md) | 小規模MVPの実装順と完了条件 |
+| [06_TEST_PLAN.md](06_TEST_PLAN.md) | 最低限必要な自動テストと手動確認 |
+| [07_IMAGE_ASSET_SPEC.md](07_IMAGE_ASSET_SPEC.md) | レイアウト画像の添付、格納、相対参照仕様 |
+| [08_IMAGE_IMPLEMENTATION_PLAN.md](08_IMAGE_IMPLEMENTATION_PLAN.md) | 画像対応の最小実装計画 |
 
 ## 4. 基本出力設計書
 
-一機能につき、原則として次の設計書を生成対象とする。
+次の6ファイルを初期選択する。
 
 - `Hist.md`
 - `Outline_A.md`
@@ -52,7 +53,29 @@
 - `Others.md`
 - `Footnote.md`
 
-## 5. 想定出力構成
+## 5. テンプレート
+
+生成形式の正本はリポジトリ直下の`templates/`とする。
+
+```text
+templates/
+├── README_TEMPLATE.md
+└── sheets/
+    ├── Hist.md
+    ├── Outline_A.md
+    ├── Outline_B.md
+    ├── S-Layout.md
+    ├── R-Layout.md
+    ├── FuncSpec.md
+    ├── Event.md
+    ├── FuncDetail.md
+    ├── Relation.md
+    ├── Check.md
+    ├── Others.md
+    └── Footnote.md
+```
+
+## 6. 想定出力構成
 
 ```text
 <機能ID>_<機能名>/
@@ -69,10 +92,8 @@
     │   └── screen-overview.png
     ├── R-Layout.md
     ├── R-Layout/
-    │   └── report-page-1.png
+    │   └── report-sample.png
     └── 必要に応じて追加される設計書.md
 ```
 
-`README.md`以外の設計書は、すべて`sheets`フォルダに配置する。
-
-画像は、対象Markdownの拡張子を除いたファイル名と同じフォルダへ配置する。画像が存在しない場合、その画像フォルダは生成しない。
+`README.md`以外のMarkdownはすべて`sheets/`へ配置する。画像が存在しない場合、画像フォルダは生成しない。
