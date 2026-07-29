@@ -283,11 +283,9 @@ function replaceTokens(
 
 SQLが入力されている場合だけ、次の形式で生成する。
 
-```markdown
-```sql
-SELECT ...
-```
-```
+> ```sql
+> SELECT ...
+> ```
 
 SQLのインデント、改行、内容を変更しない。
 
