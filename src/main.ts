@@ -1,5 +1,6 @@
 import "./style-base.css";
 import "./style-components.css";
+import "./style-s-layout.css";
 import { getDocumentDefinition } from "./documentDefinitions";
 import { revokeImagePreview } from "./imageAssets";
 import { generateDesignPackage, packageRootName, validateDesignPackage } from "./markdownGenerator";
@@ -75,9 +76,10 @@ function navigate(page: PageId): void {
 }
 
 function revokeAllImages(): void {
-  for (const type of ["S-Layout", "R-Layout"] as const) {
-    for (const image of state.design.documents[type].images) revokeImagePreview(image);
+  for (const screen of state.design.documents["S-Layout"].screens) {
+    if (screen.image) revokeImagePreview(screen.image);
   }
+  for (const image of state.design.documents["R-Layout"].images) revokeImagePreview(image);
 }
 
 function resetDesign(): void {
@@ -178,10 +180,9 @@ function render(): void {
 }
 
 window.addEventListener("beforeunload", (event) => {
-  const hasImages = (["S-Layout", "R-Layout"] as const).some(
-    (type) => state.design.documents[type].images.some((image) => image.file),
-  );
-  if (hasImages) event.preventDefault();
+  const hasScreenImages = state.design.documents["S-Layout"].screens.some((screen) => screen.image?.file);
+  const hasReportImages = state.design.documents["R-Layout"].images.some((image) => image.file);
+  if (hasScreenImages || hasReportImages) event.preventDefault();
 });
 
 render();
