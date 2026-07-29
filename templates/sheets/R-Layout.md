@@ -43,3 +43,5 @@
 
 ### 4.4 Rendering/output behavior notes
 {{OUTPUT_BEHAVIOR_NOTES}}
+
+{{LAYOUT_IMAGE_SECTION}}
