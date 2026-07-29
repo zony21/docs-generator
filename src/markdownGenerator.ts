@@ -58,7 +58,7 @@ function buildDocument(design: DesignPackage, type: DocumentType, generatedAt: s
   const data = design.documents[type];
   let content = replaceTokens(getDocumentTemplate(type), {
     ...commonTokens(design, generatedAt),
-    ...summaryTokens(data),
+    ...summaryTokens(type),
     ...documentSpecificTokens(type, data),
   });
   if (type === "FuncDetail") {

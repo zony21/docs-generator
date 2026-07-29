@@ -108,12 +108,16 @@ function render(): void {
   const messageRegion = element("div", "message-region") as HTMLDivElement;
   messageRegion.id = "message-region";
   messageRegion.hidden = true;
+  const workspace = element("div", "editor-preview-layout");
+  workspace.append(
+    renderDocumentEditors(state, actions),
+    renderPreviewSection(state, actions),
+  );
   main.append(
     messageRegion,
     renderCommonSection(state, actions),
     renderDocumentSelection(state, actions),
-    renderDocumentEditors(state, actions),
-    renderPreviewSection(state, actions),
+    workspace,
   );
   shell.append(main, renderActionBar(actions));
   appRoot.append(shell);

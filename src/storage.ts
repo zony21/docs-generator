@@ -53,7 +53,7 @@ export function loadDraft(storage: Storage = localStorage): DesignPackage | null
             {
               ...defaults.documents[type],
               ...saved,
-              summary: { ...defaults.documents[type].summary, ...saved?.summary },
+              summary: { ...defaults.documents[type].summary },
               text: { ...saved?.text },
               tables: saved?.tables ?? {},
               groups: saved?.groups ?? {},

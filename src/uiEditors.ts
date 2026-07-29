@@ -1,4 +1,4 @@
-import type { DocumentData, GroupItem, TableRow } from "./model";
+import { getDocumentSummary, type DocumentData, type DocumentType, type GroupItem, type TableRow } from "./model";
 import type { UiActions } from "./uiContext";
 import { button, element, field, moveItem, type ColumnDefinition } from "./uiPrimitives";
 
@@ -21,17 +21,30 @@ function refresh(actions: UiActions): void {
   actions.changed();
 }
 
-export function renderSummaryEditor(data: DocumentData, container: HTMLElement, actions: UiActions): void {
-  const summary = element("div", "subsection");
-  summary.append(element("h3", "", "文書サマリー"));
-  const grid = element("div", "form-grid");
-  grid.append(
-    field("タイトル", data.summary.sheetTitle, (value) => { data.summary.sheetTitle = value; }, actions.changed, { compact: true }),
-    field("画面・コンポーネント名", data.summary.screenComponentName, (value) => { data.summary.screenComponentName = value; }, actions.changed, { compact: true }),
-    field("イベント・チェック・機能名", data.summary.eventCheckFunctionName, (value) => { data.summary.eventCheckFunctionName = value; }, actions.changed, { compact: true }),
-    field("タイミング", data.summary.timing, (value) => { data.summary.timing = value; }, actions.changed, { compact: true }),
+export function renderSummaryEditor(type: DocumentType, container: HTMLElement): void {
+  const data = getDocumentSummary(type);
+  const summary = element("div", "subsection fixed-summary");
+  summary.append(
+    element("h3", "", "シートサマリー（固定）"),
+    element("p", "helper-text", "Excelシートの役割を表す定型情報です。設計内容の入力対象ではありません。"),
   );
-  summary.append(grid, field("備考", data.summary.notes, (value) => { data.summary.notes = value; }, actions.changed, { rows: 2, compact: true }));
+  const grid = element("dl", "fixed-summary__grid");
+  const entries: Array<[string, string]> = [
+    ["Title", data.sheetTitle],
+    ["Screen / component name", data.screenComponentName],
+    ["Event / check / function name", data.eventCheckFunctionName],
+    ["Timing", data.timing],
+    ["Notes", data.notes],
+  ];
+  for (const [label, value] of entries) {
+    const item = element("div", "fixed-summary__item");
+    item.append(
+      element("dt", "", label),
+      element("dd", value ? "" : "fixed-summary__empty", value || "（空）"),
+    );
+    grid.append(item);
+  }
+  summary.append(grid);
   container.append(summary);
 }
 

@@ -15,15 +15,23 @@ function renderDocumentEditor(type: DocumentType, state: UiState, actions: UiAct
   summary.append(text, element("span", "document-editor__path", definition.outputPath));
   details.append(summary);
   const body = element("div", "document-editor__body");
-  renderSummaryEditor(state.design.documents[type], body, actions);
+  renderSummaryEditor(type, body);
   renderSpecificEditor(type, body, state, actions);
   details.append(body);
+
+  const syncPreview = () => {
+    if (state.selectedPreviewPath === definition.outputPath) return;
+    state.selectedPreviewPath = definition.outputPath;
+    actions.updatePreview();
+  };
+  summary.addEventListener("pointerdown", syncPreview);
+  details.addEventListener("focusin", syncPreview);
   return details;
 }
 
 export function renderDocumentEditors(state: UiState, actions: UiActions): HTMLElement {
-  const section = element("section", "panel");
-  section.append(sectionHeader("3", "設計内容", "選択済みの設計書だけ表示します。入力していない内容は補完しません。"));
+  const section = element("section", "panel editor-panel");
+  section.append(sectionHeader("3", "設計内容", "左側で入力しながら、右側のMarkdownプレビューで結果を確認できます。"));
   const selected = sortDocumentTypes(state.design.selectedDocuments);
   if (selected.length === 0) {
     section.append(element("p", "empty-state empty-state--large", "設計書が選択されていません。上の一覧から選択してください。"));

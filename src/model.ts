@@ -37,6 +37,93 @@ export interface DocumentSummary {
   notes: string;
 }
 
+export const DOCUMENT_SUMMARY_DEFAULTS: Readonly<Record<DocumentType, DocumentSummary>> = {
+  Hist: {
+    sheetTitle: "改版履歴 History",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "The history shows the document was created as a receive-side design and later updated to v1.0.",
+  },
+  Outline_A: {
+    sheetTitle: "モジュール概要 Module outline",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "The sheet frames the module and the overall data flow at a high level.",
+  },
+  Outline_B: {
+    sheetTitle: "機能概要 Functiona outline",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "The sheet highlights the process flow and the CRUD pattern used by the module.",
+  },
+  "S-Layout": {
+    sheetTitle: "画面レイアウト仕様 Screen layout specifications",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "",
+  },
+  "R-Layout": {
+    sheetTitle: "",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "",
+  },
+  FuncSpec: {
+    sheetTitle: "機能（操作/処理）仕様 Function specifications",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "",
+  },
+  Event: {
+    sheetTitle: "イベント一覧 Event list",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "The workbook provides a table frame, but the event rows are blank in the extracted content.",
+  },
+  FuncDetail: {
+    sheetTitle: "機能詳細説明 Explanation of Function detail",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "WebAPI reception",
+    notes: "The design describes the validation flow, state transition logic, and response payload patterns in detail.",
+  },
+  Relation: {
+    sheetTitle: "項目相関図（DB I/O定義） Data relationship diagram",
+    screenComponentName: "",
+    eventCheckFunctionName: "Data transfer / I/O mapping",
+    timing: "During processing of inbound messages",
+    notes: "The sheet is about field-level relationships rather than UI behavior.",
+  },
+  Check: {
+    sheetTitle: "画面チェック仕様 Validate check specifications",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "The source sheet contains repeated header sections for screen-level checks and numbered rows, but the detailed check criteria are not explicitly written.",
+  },
+  Others: {
+    sheetTitle: "その他の説明 Explanation of others",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "During insert/update processing",
+    notes: "The sheet contains field-level mapping and state-setting rules.",
+  },
+  Footnote: {
+    sheetTitle: "補足説明 Footnote",
+    screenComponentName: "",
+    eventCheckFunctionName: "",
+    timing: "",
+    notes: "No meaningful notes were populated in the extracted content.",
+  },
+};
+
 export type TableRow = Record<string, string>;
 export type GroupItem = Record<string, string>;
 
@@ -85,15 +172,13 @@ function localDateString(date = new Date()): string {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 }
 
-function createDocumentData(): DocumentData {
+export function getDocumentSummary(type: DocumentType): DocumentSummary {
+  return { ...DOCUMENT_SUMMARY_DEFAULTS[type] };
+}
+
+function createDocumentData(type: DocumentType): DocumentData {
   return {
-    summary: {
-      sheetTitle: "",
-      screenComponentName: "",
-      eventCheckFunctionName: "",
-      timing: "",
-      notes: "",
-    },
+    summary: getDocumentSummary(type),
     text: {},
     tables: {},
     groups: {},
@@ -119,7 +204,7 @@ export function createDefaultDesignPackage(): DesignPackage {
     },
     selectedDocuments: [...BASIC_DOCUMENTS],
     documents: Object.fromEntries(
-      DOCUMENT_TYPES.map((type) => [type, createDocumentData()]),
+      DOCUMENT_TYPES.map((type) => [type, createDocumentData(type)]),
     ) as DocumentDataMap,
   };
 }

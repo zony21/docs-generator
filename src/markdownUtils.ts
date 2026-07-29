@@ -1,4 +1,4 @@
-import type { DesignPackage, DocumentData, GroupItem, TableRow } from "./model";
+import { getDocumentSummary, type DesignPackage, type DocumentData, type DocumentType, type GroupItem, type TableRow } from "./model";
 
 const TOKEN_PATTERN = /{{[A-Z0-9_]+}}/g;
 const INVALID_PATH_CHARACTERS = /[\\/:*?"<>|]/g;
@@ -64,13 +64,14 @@ export function commonTokens(design: DesignPackage, generatedAt: string): Record
   };
 }
 
-export function summaryTokens(data: DocumentData): Record<string, string> {
+export function summaryTokens(type: DocumentType): Record<string, string> {
+  const summary = getDocumentSummary(type);
   return {
-    SHEET_TITLE: data.summary.sheetTitle,
-    SCREEN_COMPONENT_NAME: data.summary.screenComponentName,
-    EVENT_CHECK_FUNCTION_NAME: data.summary.eventCheckFunctionName,
-    TIMING: data.summary.timing,
-    NOTES: data.summary.notes,
+    SHEET_TITLE: summary.sheetTitle,
+    SCREEN_COMPONENT_NAME: summary.screenComponentName,
+    EVENT_CHECK_FUNCTION_NAME: summary.eventCheckFunctionName,
+    TIMING: summary.timing,
+    NOTES: summary.notes,
   };
 }
 
