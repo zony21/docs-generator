@@ -1,9 +1,16 @@
-import type { DesignPackage } from "./model";
+import type { DesignPackage, DocumentType } from "./model";
+
+export type PageId = "common" | "tables" | DocumentType;
+export type PreviewMode = "rendered" | "source";
 
 export interface UiState {
   design: DesignPackage;
   messages: string[];
   selectedPreviewPath: string;
+  currentPage: PageId;
+  previewMode: PreviewMode;
+  editingSummary: DocumentType | null;
+  editingFields: DocumentType | null;
 }
 
 export interface UiActions {
@@ -11,6 +18,7 @@ export interface UiActions {
   render(): void;
   setMessages(messages: string[]): void;
   updatePreview(): void;
+  navigate(page: PageId): void;
   resetDesign(): void;
   exportZip(button: HTMLButtonElement): Promise<void>;
 }
