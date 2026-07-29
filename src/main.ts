@@ -1,14 +1,17 @@
 import "./style-base.css";
 import "./style-components.css";
+import { getDocumentDefinition } from "./documentDefinitions";
 import { revokeImagePreview } from "./imageAssets";
 import { generateDesignPackage, packageRootName, validateDesignPackage } from "./markdownGenerator";
-import { createDefaultDesignPackage } from "./model";
+import { createDefaultDesignPackage, DOCUMENT_TYPES, type DocumentType } from "./model";
 import { clearDraft, loadDraft, saveDraft } from "./storage";
-import type { UiActions, UiState } from "./uiContext";
+import type { PageId, UiActions, UiState } from "./uiContext";
 import { renderCommonSection, renderDocumentSelection, renderHero } from "./uiCommonSections";
-import { renderDocumentEditors } from "./uiDocumentSections";
+import { renderDocumentPage } from "./uiDocumentSections";
+import { renderPageStepper, renderPageTabs } from "./uiNavigation";
 import { element } from "./uiPrimitives";
 import { renderActionBar, renderPreviewSection, updatePreview } from "./uiPreviewSections";
+import { renderTableCatalogSection } from "./uiTableCatalog";
 import { createZipBlob, downloadBlob } from "./zipExporter";
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -18,6 +21,10 @@ const state: UiState = {
   design: loadDraft() ?? createDefaultDesignPackage(),
   messages: [],
   selectedPreviewPath: "README.md",
+  currentPage: "common",
+  previewMode: "rendered",
+  editingSummary: null,
+  editingFields: null,
 };
 let saveTimer: number | undefined;
 let previewTimer: number | undefined;
@@ -54,6 +61,19 @@ function changed(): void {
   previewTimer = window.setTimeout(() => updatePreview(state), 120);
 }
 
+function navigate(page: PageId): void {
+  state.currentPage = page;
+  state.editingSummary = null;
+  state.editingFields = null;
+  if (page === "common" || page === "tables") {
+    state.selectedPreviewPath = "README.md";
+  } else {
+    state.selectedPreviewPath = getDocumentDefinition(page).outputPath;
+  }
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function revokeAllImages(): void {
   for (const type of ["S-Layout", "R-Layout"] as const) {
     for (const image of state.design.documents[type].images) revokeImagePreview(image);
@@ -65,6 +85,10 @@ function resetDesign(): void {
   revokeAllImages();
   state.design = createDefaultDesignPackage();
   state.selectedPreviewPath = "README.md";
+  state.currentPage = "common";
+  state.previewMode = "rendered";
+  state.editingSummary = null;
+  state.editingFields = null;
   clearDraft();
   setMessages([]);
   render();
@@ -84,7 +108,7 @@ async function exportZip(exportButton: HTMLButtonElement): Promise<void> {
     downloadBlob(await createZipBlob(result), `${packageRootName(state.design)}.zip`);
     setMessages([]);
   } catch (error) {
-    setMessages([error instanceof Error ? error.message : "ZIPを出力できませんでした。"]) ;
+    setMessages([error instanceof Error ? error.message : "ZIPを出力できませんでした."]);
   } finally {
     exportButton.disabled = false;
     exportButton.textContent = "ZIPを出力";
@@ -96,9 +120,46 @@ const actions: UiActions = {
   render,
   setMessages,
   updatePreview: () => updatePreview(state),
+  navigate,
   resetDesign,
   exportZip,
 };
+
+function renderCurrentPage(main: HTMLElement): void {
+  if (state.currentPage === "common") {
+    const stack = element("div", "settings-page-stack");
+    stack.append(
+      renderCommonSection(state, actions),
+      renderDocumentSelection(state, actions),
+      renderPageStepper(state, actions),
+    );
+    main.append(stack);
+    return;
+  }
+
+  if (state.currentPage === "tables") {
+    const stack = element("div", "settings-page-stack");
+    stack.append(renderTableCatalogSection(state, actions), renderPageStepper(state, actions));
+    main.append(stack);
+    return;
+  }
+
+  if (!DOCUMENT_TYPES.includes(state.currentPage as DocumentType)) {
+    state.currentPage = "common";
+    renderCurrentPage(main);
+    return;
+  }
+
+  const type = state.currentPage as DocumentType;
+  if (!state.design.selectedDocuments.includes(type)) {
+    state.currentPage = "common";
+    renderCurrentPage(main);
+    return;
+  }
+  const workspace = element("div", "editor-preview-layout");
+  workspace.append(renderDocumentPage(type, state, actions), renderPreviewSection(state, actions));
+  main.append(workspace);
+}
 
 function render(): void {
   appRoot.replaceChildren();
@@ -108,17 +169,8 @@ function render(): void {
   const messageRegion = element("div", "message-region") as HTMLDivElement;
   messageRegion.id = "message-region";
   messageRegion.hidden = true;
-  const workspace = element("div", "editor-preview-layout");
-  workspace.append(
-    renderDocumentEditors(state, actions),
-    renderPreviewSection(state, actions),
-  );
-  main.append(
-    messageRegion,
-    renderCommonSection(state, actions),
-    renderDocumentSelection(state, actions),
-    workspace,
-  );
+  main.append(messageRegion, renderPageTabs(state, actions));
+  renderCurrentPage(main);
   shell.append(main, renderActionBar(actions));
   appRoot.append(shell);
   renderMessages();
