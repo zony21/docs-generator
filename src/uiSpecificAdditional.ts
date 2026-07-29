@@ -4,6 +4,7 @@ import { renderTableEditor, renderTextEditor } from "./uiEditors";
 import { configuredColumns, inputFieldLabel, isInputFieldEnabled } from "./uiFieldSettings";
 import { renderImageEditor } from "./uiImages";
 import type { ColumnDefinition } from "./uiPrimitives";
+import { renderScreenLayoutEditor } from "./uiScreenLayouts";
 
 function renderOptionalText(
   type: DocumentType,
@@ -44,25 +45,7 @@ export function renderAdditionalEditor(
 ): void {
   switch (type) {
     case "S-Layout":
-      renderTableEditor(container, "画面領域", data, "areas", columns(type, state, "areas", [
-        { key: "area", label: "領域" },
-        { key: "description", label: "説明", textarea: true },
-      ]), actions);
-      renderTableEditor(container, "コントロール一覧", data, "controls", columns(type, state, "controls", [
-        { key: "controlId", label: "コントロールID" },
-        { key: "controlName", label: "コントロール名" },
-        { key: "type", label: "種類" },
-        { key: "area", label: "領域" },
-      ]), actions);
-      renderTableEditor(container, "コントロール属性", data, "properties", columns(type, state, "properties", [
-        { key: "controlId", label: "コントロールID" },
-        { key: "lengthFormat", label: "桁数・形式" },
-        { key: "required", label: "必須" },
-        { key: "defaultValue", label: "初期値" },
-        { key: "remarks", label: "備考", textarea: true },
-      ]), actions);
-      renderOptionalText(type, container, data, state, actions, "displayEditRules", "表示・編集ルール", 5);
-      if (isInputFieldEnabled(state.design, type, "images")) renderImageEditor("S-Layout", container, state, actions);
+      renderScreenLayoutEditor(container, state, actions);
       break;
     case "R-Layout":
       renderTableEditor(container, "レイアウトブロック", data, "blocks", columns(type, state, "blocks", [
