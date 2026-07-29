@@ -74,19 +74,17 @@ describe("markdown generator", () => {
     }
   });
 
-  it("uses fixed sheet summaries instead of draft overrides", () => {
+  it("uses edited sheet summaries", () => {
     const design = validDesign();
     design.selectedDocuments = ["FuncDetail"];
-    design.documents.FuncDetail.summary.sheetTitle = "変更されたタイトル";
-    design.documents.FuncDetail.summary.timing = "変更されたタイミング";
+    design.documents.FuncDetail.summary.sheetTitle = "受信処理の機能詳細";
+    design.documents.FuncDetail.summary.timing = "メッセージ受信時";
     const result = generateDesignPackage(design);
     const detail = result.files.find((file) => file.path === "sheets/FuncDetail.md");
     expect(detail?.kind).toBe("text");
     if (detail?.kind === "text") {
-      expect(detail.content).toContain("- Title: 機能詳細説明 Explanation of Function detail");
-      expect(detail.content).toContain("- Timing: WebAPI reception");
-      expect(detail.content).not.toContain("変更されたタイトル");
-      expect(detail.content).not.toContain("変更されたタイミング");
+      expect(detail.content).toContain("- Title: 受信処理の機能詳細");
+      expect(detail.content).toContain("- Timing: メッセージ受信時");
     }
   });
 

@@ -1,4 +1,5 @@
 import { generateDesignPackage, type GeneratedTextFile } from "./markdownGenerator";
+import { renderMarkdown } from "./markdownRenderer";
 import type { UiActions, UiState } from "./uiContext";
 import { button, element, sectionHeader } from "./uiPrimitives";
 
@@ -7,11 +8,34 @@ function previewTextFiles(state: UiState): GeneratedTextFile[] {
   return result.files.filter((file): file is GeneratedTextFile => file.kind === "text");
 }
 
+function resolvePreviewImage(state: UiState, path: string): string | undefined {
+  const normalized = path.replace(/^\.\//, "");
+  for (const type of ["S-Layout", "R-Layout"] as const) {
+    for (const image of state.design.documents[type].images) {
+      if (`${type}/${image.outputFileName}` === normalized) return image.previewUrl;
+    }
+  }
+  return undefined;
+}
+
+function applyPreviewMode(state: UiState): void {
+  const rendered = document.querySelector<HTMLElement>("#markdown-rendered-preview");
+  const source = document.querySelector<HTMLElement>("#markdown-source-preview");
+  if (rendered) rendered.hidden = state.previewMode !== "rendered";
+  if (source) source.hidden = state.previewMode !== "source";
+  document.querySelectorAll<HTMLButtonElement>("[data-preview-mode]").forEach((modeButton) => {
+    const active = modeButton.dataset.previewMode === state.previewMode;
+    modeButton.classList.toggle("preview-mode-button--active", active);
+    modeButton.setAttribute("aria-pressed", String(active));
+  });
+}
+
 export function updatePreview(state: UiState): void {
   const select = document.querySelector<HTMLSelectElement>("#preview-file-select");
-  const pre = document.querySelector<HTMLPreElement>("#markdown-preview");
+  const source = document.querySelector<HTMLPreElement>("#markdown-source-preview");
+  const rendered = document.querySelector<HTMLElement>("#markdown-rendered-preview");
   const path = document.querySelector<HTMLElement>(".preview-path");
-  if (!select || !pre) return;
+  if (!select || !source || !rendered) return;
   try {
     const files = previewTextFiles(state);
     if (!files.some((file) => file.path === state.selectedPreviewPath)) {
@@ -29,16 +53,21 @@ export function updatePreview(state: UiState): void {
       }
     }
     select.value = state.selectedPreviewPath;
-    pre.textContent = files.find((file) => file.path === state.selectedPreviewPath)?.content ?? "生成対象がありません。";
+    const content = files.find((file) => file.path === state.selectedPreviewPath)?.content ?? "生成対象がありません。";
+    source.textContent = content;
+    rendered.innerHTML = renderMarkdown(content, (imagePath) => resolvePreviewImage(state, imagePath));
     if (path) path.textContent = state.selectedPreviewPath;
+    applyPreviewMode(state);
   } catch (error) {
-    pre.textContent = error instanceof Error ? error.message : "プレビューを生成できませんでした。";
+    const message = error instanceof Error ? error.message : "プレビューを生成できませんでした。";
+    source.textContent = message;
+    rendered.textContent = message;
   }
 }
 
 export function renderPreviewSection(state: UiState, actions: UiActions): HTMLElement {
   const section = element("section", "panel preview-panel");
-  section.append(sectionHeader("4", "Markdownプレビュー", "ZIPへ出力するMarkdownソースをファイル単位で確認できます。"));
+  section.append(sectionHeader("4", "Markdownプレビュー", "完成イメージとMarkdownコードを切り替えて確認できます。"));
   const toolbar = element("div", "preview-toolbar");
   const label = element("label", "field field--inline");
   label.append(element("span", "field__label", "プレビューファイル"));
@@ -50,10 +79,27 @@ export function renderPreviewSection(state: UiState, actions: UiActions): HTMLEl
   });
   label.append(select);
   toolbar.append(label, element("span", "preview-path", state.selectedPreviewPath));
-  const pre = element("pre", "markdown-preview") as HTMLPreElement;
-  pre.id = "markdown-preview";
-  pre.tabIndex = 0;
-  section.append(toolbar, pre);
+
+  const modeSwitch = element("div", "preview-mode-switch");
+  const renderedButton = button("表示プレビュー", "preview-mode-button", () => {
+    state.previewMode = "rendered";
+    actions.updatePreview();
+  });
+  renderedButton.dataset.previewMode = "rendered";
+  const sourceButton = button("Markdownコード", "preview-mode-button", () => {
+    state.previewMode = "source";
+    actions.updatePreview();
+  });
+  sourceButton.dataset.previewMode = "source";
+  modeSwitch.append(renderedButton, sourceButton);
+
+  const rendered = element("article", "rendered-preview markdown-body");
+  rendered.id = "markdown-rendered-preview";
+  rendered.tabIndex = 0;
+  const source = element("pre", "markdown-preview") as HTMLPreElement;
+  source.id = "markdown-source-preview";
+  source.tabIndex = 0;
+  section.append(toolbar, modeSwitch, rendered, source);
   return section;
 }
 

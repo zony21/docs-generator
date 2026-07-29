@@ -124,6 +124,23 @@ export const DOCUMENT_SUMMARY_DEFAULTS: Readonly<Record<DocumentType, DocumentSu
   },
 };
 
+export interface TableCatalogItem {
+  id: string;
+  category: string;
+  physicalName: string;
+  logicalName: string;
+  description: string;
+}
+
+export interface InputFieldPreference {
+  label: string;
+  enabled: boolean;
+}
+
+export type InputFieldPreferenceMap = Partial<
+  Record<DocumentType, Record<string, InputFieldPreference>>
+>;
+
 export type TableRow = Record<string, string>;
 export type GroupItem = Record<string, string>;
 
@@ -155,6 +172,8 @@ export interface DesignPackage {
   schemaVersion: "1.0.0";
   common: CommonMetadata;
   selectedDocuments: DocumentType[];
+  tableCatalog: TableCatalogItem[];
+  fieldPreferences: InputFieldPreferenceMap;
   documents: DocumentDataMap;
 }
 
@@ -203,6 +222,8 @@ export function createDefaultDesignPackage(): DesignPackage {
       notes: "",
     },
     selectedDocuments: [...BASIC_DOCUMENTS],
+    tableCatalog: [],
+    fieldPreferences: {},
     documents: Object.fromEntries(
       DOCUMENT_TYPES.map((type) => [type, createDocumentData(type)]),
     ) as DocumentDataMap,

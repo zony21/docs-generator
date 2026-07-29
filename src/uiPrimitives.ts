@@ -1,9 +1,17 @@
+let suggestionListSequence = 0;
+
+export interface SuggestionOption {
+  value: string;
+  label?: string;
+}
+
 export interface FieldOptions {
   type?: string;
   required?: boolean;
   placeholder?: string;
   rows?: number;
   compact?: boolean;
+  suggestions?: readonly SuggestionOption[];
 }
 
 export interface ColumnDefinition {
@@ -11,6 +19,7 @@ export interface ColumnDefinition {
   label: string;
   textarea?: boolean;
   placeholder?: string;
+  suggestions?: readonly SuggestionOption[];
 }
 
 export function element<K extends keyof HTMLElementTagNameMap>(
@@ -29,6 +38,21 @@ export function button(label: string, className: string, onClick: () => void): H
   node.type = "button";
   node.addEventListener("click", onClick);
   return node;
+}
+
+function attachSuggestions(input: HTMLInputElement, suggestions: readonly SuggestionOption[]): HTMLDataListElement {
+  const dataList = element("datalist") as HTMLDataListElement;
+  suggestionListSequence += 1;
+  dataList.id = `field-suggestions-${suggestionListSequence}`;
+  input.setAttribute("list", dataList.id);
+  for (const suggestion of suggestions) {
+    if (!suggestion.value.trim()) continue;
+    const option = element("option") as HTMLOptionElement;
+    option.value = suggestion.value;
+    if (suggestion.label) option.label = suggestion.label;
+    dataList.append(option);
+  }
+  return dataList;
 }
 
 export function field(
@@ -57,6 +81,7 @@ export function field(
     input.placeholder = options.placeholder ?? "";
     input.addEventListener("input", () => { onInput(input.value); onChanged(); });
     wrapper.append(input);
+    if (options.suggestions?.length) wrapper.append(attachSuggestions(input, options.suggestions));
   }
   return wrapper;
 }

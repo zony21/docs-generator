@@ -50,6 +50,13 @@ export function renderCommonSection(state: UiState, actions: UiActions): HTMLEle
 
 function selectDocuments(types: readonly DocumentType[], state: UiState, actions: UiActions): void {
   state.design.selectedDocuments = sortDocumentTypes(types);
+  if (
+    DOCUMENT_TYPES.includes(state.currentPage as DocumentType)
+    && !state.design.selectedDocuments.includes(state.currentPage as DocumentType)
+  ) {
+    state.currentPage = "common";
+    state.selectedPreviewPath = "README.md";
+  }
   actions.render();
   actions.changed();
 }
