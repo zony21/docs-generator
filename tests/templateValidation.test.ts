@@ -8,6 +8,7 @@ const COMMON_TOKENS = [
   "{{FUNCTION_ID}}",
   "{{FUNCTION_NAME}}",
   "{{GENERATED_AT}}",
+  "{{MAIN_CONTENT}}",
 ];
 
 describe("template validation", () => {
@@ -30,13 +31,13 @@ describe("template validation", () => {
     expect(defaults).toEqual([...BASIC_DOCUMENTS]);
   });
 
-  it("contains common tokens and layout image tokens", () => {
+  it("contains common tokens and one configurable main-content token", () => {
     for (const template of Object.values(getAllTemplates())) {
       for (const token of COMMON_TOKENS) {
         expect(template).toContain(token);
       }
+      expect(template).toContain("## 4. 設計内容");
+      expect(template.match(/{{MAIN_CONTENT}}/g)).toHaveLength(1);
     }
-    expect(getAllTemplates()["S-Layout"]).toContain("{{LAYOUT_IMAGE_SECTION}}");
-    expect(getAllTemplates()["R-Layout"]).toContain("{{LAYOUT_IMAGE_SECTION}}");
   });
 });
