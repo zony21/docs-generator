@@ -20,5 +20,6 @@ export interface UiActions {
   updatePreview(): void;
   navigate(page: PageId): void;
   resetDesign(): void;
+  importExcel(file: File): Promise<void>;
   exportZip(button: HTMLButtonElement): Promise<void>;
 }
