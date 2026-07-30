@@ -6,3 +6,8 @@
 .authoritative-section-card textarea { min-height: 88px; }
 .authoritative-section-card .group-card textarea { min-height: 110px; }
 .authoritative-section-card h3, .authoritative-section-card strong { overflow-wrap: anywhere; }
+
+.excel-import-dropzone { display: grid; justify-items: start; gap: 10px; padding: 22px; border: 2px dashed #b8c6d9; border-radius: 14px; background: #f8faff; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; cursor: pointer; }
+.excel-import-dropzone:hover, .excel-import-dropzone:focus-visible, .excel-import-dropzone--active { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 4px rgba(71, 94, 190, .08); outline: none; }
+.excel-import-dropzone strong { color: #253047; font-size: .98rem; }
+.excel-import-dropzone .helper-text { margin: 0; }
