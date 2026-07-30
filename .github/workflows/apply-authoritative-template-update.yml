@@ -30,6 +30,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sed -i 's/SPkureg/SPkereg/' .authoritative-update.part05
           cat .authoritative-update.part* | base64 --decode | tar -xz
           rm -f .authoritative-update.part*
           rm -f .github/workflows/apply-authoritative-template-update.yml
