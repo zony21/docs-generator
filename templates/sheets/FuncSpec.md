@@ -1,36 +1,84 @@
 # FuncSpec
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: FuncSpec
-- File: `sheets/FuncSpec.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `FuncSpec`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+<!--
+画面が増える場合は `## [画面名]` を追加します。
+ボタンや処理が増える場合は `### [処理名]` を追加します。
+-->
 
-### 4.1 Screen/function unit
-{{FUNCTION_UNIT}}
+## [画面名]
 
-### 4.2 Trigger/timing
-{{TRIGGER_TIMING}}
+### 起動時
 
-### 4.3 Action details
-{{ACTION_DETAIL_BLOCKS}}
+- **リストの取得**
+  - [取得対象リスト名]
+  - [取得元マスタまたはAPI] からデータを取得し、リスト設定する。
+- **初期値の設定**
+  - [初期値設定内容]
+- **一覧の表示**
+  - [一覧表示処理名] を実施する。
+- **定周期タイマーの開始**
+  - [必要な場合のみ記載]
+
+### [一覧表示処理名]
+
+- [取得元] からデータを取得し、一覧に表示する。
+- [検索条件、並び順、表示制御]
+
+### 「[検索]」ボタン
+
+- 入力された検索条件を付加して、[一覧表示処理名] を実施する。
+
+### 「[クリア]」ボタン
+
+- 検索条件および一覧を初期状態に戻す。
+
+### 「[業務ボタン名]」ボタン
+
+- **入力チェック**
+  - [対象行が選択されていない場合はエラー]
+  - [状態、権限、入力値などのチェック条件]
+- **画面起動 / 更新処理 / 登録処理**
+  - [遷移先画面または実行処理]
+- **終了処理**
+  - [成功時、キャンセル時、エラー時の扱い]
+
+## [サブ画面名またはモーダル名]
+
+### 初期処理
+
+- **テキストボックスの設定**
+  - 呼出し元画面で選択した値を表示する。
+- **リストの取得**
+  - [必要な場合のみ記載]
+
+### 「[確定]」ボタン
+
+- **入力チェック**
+  - [必須、桁数、範囲、存在、重複など]
+- **排他チェック**
+  - [対象データが存在しない場合はエラー]
+- **論理チェック**
+  - [最新状態を取得し、実行可能か判定]
+- **確認処理**
+  - 確認メッセージを表示し、肯定応答の場合のみ処理を続行する。
+- **登録処理 / 更新処理**
+  - [更新内容]
+- **終了処理**
+  - 処理成功時、画面を終了する。
+
+### 「[キャンセル]」ボタン
+
+- 画面を終了する。

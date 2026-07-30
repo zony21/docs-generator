@@ -1,7 +1,6 @@
 import { getDocumentDefinition } from "./documentDefinitions";
 import type { DocumentType } from "./model";
 import type { UiActions, UiState } from "./uiContext";
-import { renderSummaryEditor } from "./uiEditors";
 import { renderFieldSettings } from "./uiFieldSettings";
 import { renderPageStepper } from "./uiNavigation";
 import { button, element, sectionHeader } from "./uiPrimitives";
@@ -12,7 +11,7 @@ export function renderDocumentPage(type: DocumentType, state: UiState, actions: 
   const section = element("section", "panel editor-panel sheet-page");
   const headingRow = element("div", "sheet-page__heading");
   headingRow.append(
-    sectionHeader("3", `${type} — ${definition.displayName}`, "このシートの入力だけを表示しています。右側で生成結果を確認できます。"),
+    sectionHeader("3", `${type} — ${definition.displayName}`, `正規テンプレートの「${definition.incrementUnit}」に合わせて入力します。`),
   );
   const controls = element("div", "sheet-page__controls");
   controls.append(
@@ -28,13 +27,8 @@ export function renderDocumentPage(type: DocumentType, state: UiState, actions: 
   );
   headingRow.append(controls);
   section.append(headingRow);
-
-  if (state.editingFields === type) {
-    section.append(renderFieldSettings(type, state, actions));
-  }
-
+  if (state.editingFields === type) section.append(renderFieldSettings(type, state, actions));
   const body = element("div", "document-editor__body document-editor__body--page");
-  renderSummaryEditor(type, state.design.documents[type], body, state, actions);
   renderSpecificEditor(type, body, state, actions);
   section.append(body, renderPageStepper(state, actions));
   return section;

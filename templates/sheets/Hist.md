@@ -1,36 +1,24 @@
 # Hist
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: Hist
-- File: `sheets/Hist.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `Hist`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+## 改版履歴
 
-### 4.1 Revision history
+> 日付、Rev、Author が省略されている行は、直前行の値を引き継いで記載します。  
+> 複数シートにまたがる変更は、Sheet列を変更対象シートごとに分けます。
 
-| Creation/Update Date | Author | Rev. | Target Sheet/Area | Change Note | Approval Date | Approval By |
+| Creation Date | Author | Rev. | Sheet | Note | Approval Date | Approval by |
 | --- | --- | --- | --- | --- | --- | --- |
-{{HIST_ROWS}}
-
-### 4.2 Additional notes
-{{ADDITIONAL_NOTES}}
+| {{YYYY-MM-DD}} | {{AUTHOR}} | {{REV}} | {{SHEET_NAME}} | [変更内容を原文に近い形で記載] | {{YYYY-MM-DD}} | {{APPROVER}} |
+| {{YYYY-MM-DD}} | {{AUTHOR}} | {{REV}} | {{SHEET_NAME}} | [変更内容を記載] |  |  |

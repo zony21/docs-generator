@@ -1,40 +1,44 @@
 # Others
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: Others
-- File: `sheets/Others.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `Others`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+## [Function配列名]
 
-### 4.1 Shared constants/definitions
-| Name | Value | Notes |
-| --- | --- | --- |
-{{CONSTANT_ROWS}}
+```csharp
+private static readonly string[] [FUNCTION_ARRAY_NAME] = new string[] {
+    "[F1表示名]",
+    "[F2表示名]",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "[F8表示名]",
+    "[F9表示名]",
+    "[F10表示名]",
+    "[F11表示名]",
+    "[F12表示名]"
+};
+```
 
-### 4.2 Option/function key/helper mappings
-| Category | Mapping | Notes |
-| --- | --- | --- |
-{{MAPPING_ROWS}}
+## [定数名または補助説明名]
 
-### 4.3 Supplemental operational notes
-{{OPERATIONAL_NOTES}}
+```csharp
+// 定数、設定値、モデル定義などを記載してください
+```
+
+## 補足ルール
+
+- [Function配列、画面モード、共通部品の利用ルールなど]
+- [プロジェクト標準の説明]

@@ -12,14 +12,14 @@ export function sanitizePackageName(value: string): string {
 }
 
 export function packageRootName(design: DesignPackage): string {
-  return sanitizePackageName(`${design.common.functionId}_${design.common.functionName}`);
+  const id = design.common.moduleId.trim() || design.common.functionId.trim() || "design";
+  const name = design.common.moduleName.trim() || design.common.functionName.trim() || design.common.systemName.trim() || "package";
+  return sanitizePackageName(`${id}_${name}`);
 }
 
 export function replaceTokens(template: string, values: Readonly<Record<string, string>>): string {
   let result = template;
-  for (const [key, value] of Object.entries(values)) {
-    result = result.replaceAll(`{{${key}}}`, value);
-  }
+  for (const [key, value] of Object.entries(values)) result = result.replaceAll(`{{${key}}}`, value);
   return normalizeMarkdown(result);
 }
 
@@ -44,6 +44,11 @@ export function numberedList(value: string): string {
     .map((line, index) => `${index + 1}. ${line}`).join("\n");
 }
 
+export function bulletList(value: string): string {
+  return value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+    .map((line) => line.startsWith("-") ? line : `- ${line}`).join("\n");
+}
+
 export function sqlCodeBlock(sql: string): string {
   return sql.trim() ? `\`\`\`sql\n${sql.replace(/\s+$/, "")}\n\`\`\`` : "";
 }
@@ -57,10 +62,14 @@ export function commonTokens(design: DesignPackage, generatedAt: string): Record
     FUNCTION_ID: value.functionId,
     FUNCTION_NAME: value.functionName,
     DATE: value.date,
+    DOCUMENT_DATE: value.date,
     REVISION: value.revision,
+    DOCUMENT_REV: value.revision,
     DOC_NUMBER: value.documentNumber,
     AUTHOR: value.author,
     GENERATED_AT: generatedAt,
+    SOURCE_EXCEL_FILE: value.sourceExcelFile,
+    CONVERSION_DATE: value.conversionDate || value.date,
   };
 }
 

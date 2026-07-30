@@ -1,27 +1,54 @@
-# {{FUNCTION_ID}} {{FUNCTION_NAME}} 設計書
+# {{SYSTEM_NAME}} / {{MODULE_NAME}} 設計書 Markdown テンプレート
 
-## How to use this folder
-- Start from this README to understand the function and included design documents.
-- Open the generated files under `sheets/` from the index below.
-- Treat this Markdown package as the design source of truth.
+## 対象ファイル
 
-## Document information
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
-- Generated at: {{GENERATED_AT}}
+- 元Excelファイル: `{{SOURCE_EXCEL_FILE}}`
+- 変換日: `{{CONVERSION_DATE}}`
+- 版数: `{{DOCUMENT_REV}}`
 
-## Sheet index
+## 目的
 
-| Sheet | Design document |
-| --- | --- |
-{{SHEET_INDEX_ROWS}}
+このリポジトリは、Excel形式の画面設計書を Markdown で管理するためのテンプレートです。  
+画面数、イベント数、処理数、SQL数、チェック数に応じて、対応するセクションを追加・複製してください。
 
-## Notes
-{{PACKAGE_NOTES}}
+## 使い方
+
+1. `{{...}}` はプロジェクト固有値に置換してください。
+2. `[ ... ]` は設計内容に応じた説明、名称、条件、項目名に置換してください。
+3. 画面が複数ある場合は、各ファイル内の `## [画面名]` セクションを画面数分だけ追加してください。
+4. 一覧、詳細、モーダル、確認画面など、画面パターンが異なる場合は、同じ構成をコピーして画面ごとに記述してください。
+5. 未定義だが設計上残す必要がある項目は `（未定義）` と記載してください。
+6. 空セル、罫線用の空行、単なるレイアウト調整用の空欄は Markdown 化しない方針です。
+
+## 変換・記述方針
+
+- 元Excelのシート構成を維持する。
+- セルの単純な羅列ではなく、設計書として読めるように再構成する。
+- 表形式の情報は Markdown 表にする。
+- 処理、条件、注意事項は見出しと箇条書きで整理する。
+- SQL、配列、クラス名、メソッド名、定数はコードブロックまたはインラインコードで記述する。
+- 結合セルは、見出し、備考、表の列、または繰り返し項目として展開する。
+- 画面数、イベント数、処理数、SQL数に応じてセクションを増やす。
+
+## ファイル構成
+
+| No. | Markdown | 用途 | 増やす単位 |
+| ---: | --- | --- | --- |
+| 1 | [Hist.md](Hist.md) | 改版履歴 | 改版行 |
+| 2 | [Outline_A.md](Outline_A.md) | 機能概要 | 概要項目 |
+| 3 | [Outline_B.md](Outline_B.md) | 処理概要、処理形態、CRUD | 処理概要、CRUD対象テーブル |
+| 4 | [S-Layout.md](S-Layout.md) | 画面レイアウト、画面項目、フッター | 画面単位 |
+| 5 | [R-Layout.md](R-Layout.md) | 帳票レイアウト | 帳票単位 |
+| 6 | [FuncSpec.md](FuncSpec.md) | 機能仕様 | 画面単位、ボタン単位、処理単位 |
+| 7 | [Event.md](Event.md) | イベント一覧 | 画面単位、イベント単位 |
+| 8 | [FuncDetail.md](FuncDetail.md) | 機能詳細説明 | 処理名称、関数単位 |
+| 9 | [Relation.md](Relation.md) | DB I/O定義、SQL、項目相関 | 移送区分、SQL、テーブル単位 |
+| 10 | [Check.md](Check.md) | 画面チェック仕様 | 画面単位、チェック単位 |
+| 11 | [Others.md](Others.md) | 定数、Function配列、補助説明 | 定数分類、設定分類 |
+| 12 | [Footnote.md](Footnote.md) | 補足説明 | 補足項目 |
+
+## 注意事項
+
+- このテンプレートには業務固有の名称、テーブル名、SQL、ボタン名は含めていません。
+- 画面設計書以外にも、帳票設計、バッチ設計、API設計へ流用する場合は、必要に応じてファイル名やセクション名を追加してください。
+- Docsify / MkDocs / Docusaurus で利用する場合は、ナビゲーション設定ファイル側で上記 Markdown を順番に登録してください。

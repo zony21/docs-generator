@@ -1,47 +1,63 @@
 # S-Layout
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: S-Layout
-- File: `sheets/S-Layout.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `S-Layout`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
-
-## 4. Main content
-
-### 4.1 Screen sections/areas
-| Area | Description |
+| 項目 | 値 |
 | --- | --- |
-{{SCREEN_AREA_ROWS}}
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-### 4.2 Control list
-| Control ID | Control Name | Type | Area |
-| --- | --- | --- | --- |
-{{CONTROL_ROWS}}
+<!--
+画面が増える場合は、以下の「## [画面名]」ブロックをコピーして追加します。
+第一画面、第二画面、モーダル、確認画面、詳細画面など、画面単位で分けてください。
+-->
 
-### 4.3 Control properties
-| Control ID | Length/Format | Required | Default | Remarks |
-| --- | --- | --- | --- | --- |
-{{CONTROL_PROPERTY_ROWS}}
+## [画面名]
 
-### 4.4 Display/edit rules
-{{DISPLAY_EDIT_RULES}}
+### 備考
 
-{{LAYOUT_IMAGE_SECTION}}
+- [画面固有の前提、表示条件、入力条件]
+- [モーダル、遷移元、遷移先、表示制御など]
+
+### 画面項目
+
+| No | 項目名称 | タイプ | I/O | 桁数 | 必須 | 画面モード① | 画面モード② | 画面モード③ | 備考 | フォーカス時メッセージ |
+| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [セクション名またはラベル] | lbl | Out |  |  | △ |  |  | [表示グループ名] |  |
+| 2 | [入力項目名] | txt | In | [桁数] | [○/空欄] | ○ |  |  | [入力制限、部分一致、完全一致など] | [フォーカス時メッセージ] |
+| 3 | [選択項目名] | cmb | In | [桁数] |  | ↑ |  |  | [区分マスタ、コード体系など] |  |
+| 4 | [一覧項目名] | dgv | Out | [桁数] |  | ↑ |  |  | [表示元テーブルまたは算出元] |  |
+
+### フッター
+
+| No | 項目名称 | タイプ | I/O | 桁数 | 必須 | 画面モード① | 画面モード② | 画面モード③ | 備考 | フォーカス時メッセージ |
+| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [F1ボタン名] | btn | In |  |  | ○ |  |  | [処理概要] |  |
+| 2 | [F2ボタン名] | btn | In |  |  | ↑ |  |  | [処理概要] |  |
+| 3 |  | btn | In |  |  | ↑ |  |  | [未使用の場合は空欄のまま] |  |
+| 8 | [F8ボタン名] | btn | In |  |  | ↑ |  |  | [処理概要、遷移先など] |  |
+| 12 | [終了/キャンセル] | btn | In |  |  | ↑ |  |  | [画面終了、前画面へ戻るなど] |  |
+
+## [画面名: 必要に応じて追加]
+
+### 備考
+
+- [追加画面の備考]
+
+### 画面項目
+
+| No | 項目名称 | タイプ | I/O | 桁数 | 必須 | 画面モード① | 画面モード② | 画面モード③ | 備考 | フォーカス時メッセージ |
+| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [項目名] | [txt/cmb/dgv/lbl/btn/etc.] | [In/Out/I/O] | [桁数] | [○/△/空欄] | [○/△/×/↑] |  |  | [備考] | [メッセージ] |
+
+### フッター
+
+| No | 項目名称 | タイプ | I/O | 桁数 | 必須 | 画面モード① | 画面モード② | 画面モード③ | 備考 | フォーカス時メッセージ |
+| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [ボタン名] | btn | In |  |  | ○ |  |  | [処理概要] |  |

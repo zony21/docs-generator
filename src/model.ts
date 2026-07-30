@@ -19,13 +19,16 @@ export interface CommonMetadata {
   systemName: string;
   moduleName: string;
   moduleId: string;
+  sourceExcelFile: string;
+  conversionDate: string;
+  date: string;
+  revision: string;
+  author: string;
+  // Legacy fields are retained so v1 drafts can be migrated without data loss.
   functionId: string;
   functionName: string;
   summary: string;
   documentNumber: string;
-  date: string;
-  revision: string;
-  author: string;
   notes: string;
 }
 
@@ -37,92 +40,15 @@ export interface DocumentSummary {
   notes: string;
 }
 
-export const DOCUMENT_SUMMARY_DEFAULTS: Readonly<Record<DocumentType, DocumentSummary>> = {
-  Hist: {
-    sheetTitle: "改版履歴 History",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "The history shows the document was created as a receive-side design and later updated to v1.0.",
-  },
-  Outline_A: {
-    sheetTitle: "モジュール概要 Module outline",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "The sheet frames the module and the overall data flow at a high level.",
-  },
-  Outline_B: {
-    sheetTitle: "機能概要 Functiona outline",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "The sheet highlights the process flow and the CRUD pattern used by the module.",
-  },
-  "S-Layout": {
-    sheetTitle: "画面レイアウト仕様 Screen layout specifications",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "",
-  },
-  "R-Layout": {
+export const DOCUMENT_SUMMARY_DEFAULTS: Readonly<Record<DocumentType, DocumentSummary>> = Object.fromEntries(
+  DOCUMENT_TYPES.map((type) => [type, {
     sheetTitle: "",
     screenComponentName: "",
     eventCheckFunctionName: "",
     timing: "",
     notes: "",
-  },
-  FuncSpec: {
-    sheetTitle: "機能（操作/処理）仕様 Function specifications",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "",
-  },
-  Event: {
-    sheetTitle: "イベント一覧 Event list",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "The workbook provides a table frame, but the event rows are blank in the extracted content.",
-  },
-  FuncDetail: {
-    sheetTitle: "機能詳細説明 Explanation of Function detail",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "WebAPI reception",
-    notes: "The design describes the validation flow, state transition logic, and response payload patterns in detail.",
-  },
-  Relation: {
-    sheetTitle: "項目相関図（DB I/O定義） Data relationship diagram",
-    screenComponentName: "",
-    eventCheckFunctionName: "Data transfer / I/O mapping",
-    timing: "During processing of inbound messages",
-    notes: "The sheet is about field-level relationships rather than UI behavior.",
-  },
-  Check: {
-    sheetTitle: "画面チェック仕様 Validate check specifications",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "The source sheet contains repeated header sections for screen-level checks and numbered rows, but the detailed check criteria are not explicitly written.",
-  },
-  Others: {
-    sheetTitle: "その他の説明 Explanation of others",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "During insert/update processing",
-    notes: "The sheet contains field-level mapping and state-setting rules.",
-  },
-  Footnote: {
-    sheetTitle: "補足説明 Footnote",
-    screenComponentName: "",
-    eventCheckFunctionName: "",
-    timing: "",
-    notes: "No meaningful notes were populated in the extracted content.",
-  },
-};
+  }]),
+) as Record<DocumentType, DocumentSummary>;
 
 export interface TableCatalogItem {
   id: string;
@@ -158,6 +84,7 @@ export interface LayoutImage {
   previewUrl?: string;
 }
 
+/** Legacy S-Layout structure retained for v1 draft migration. */
 export interface ScreenLayoutSection {
   id: string;
   name: string;
@@ -168,6 +95,15 @@ export interface ScreenLayoutSection {
   footerItems: TableRow[];
 }
 
+export interface DocumentSection {
+  id: string;
+  name: string;
+  order: number;
+  fields: Record<string, string>;
+  tables: Record<string, TableRow[]>;
+  children: DocumentSection[];
+}
+
 export interface DocumentData {
   summary: DocumentSummary;
   text: Record<string, string>;
@@ -175,12 +111,13 @@ export interface DocumentData {
   groups: Record<string, GroupItem[]>;
   images: LayoutImage[];
   screens: ScreenLayoutSection[];
+  sections: DocumentSection[];
 }
 
 export type DocumentDataMap = Record<DocumentType, DocumentData>;
 
 export interface DesignPackage {
-  schemaVersion: "1.0.0";
+  schemaVersion: "2.0.0";
   common: CommonMetadata;
   selectedDocuments: DocumentType[];
   tableCatalog: TableCatalogItem[];
@@ -234,6 +171,60 @@ export function createScreenLayoutSection(index = 0): ScreenLayoutSection {
   };
 }
 
+export function createDocumentSection(name: string, index = 0): DocumentSection {
+  return {
+    id: createId(),
+    name,
+    order: index + 1,
+    fields: {},
+    tables: {},
+    children: [],
+  };
+}
+
+export function defaultSectionName(type: DocumentType, index: number): string {
+  switch (type) {
+    case "S-Layout":
+    case "FuncSpec":
+    case "Event":
+    case "FuncDetail":
+    case "Check":
+      return defaultScreenLayoutName(index);
+    case "R-Layout":
+      return `帳票${index + 1}`;
+    case "Relation":
+      return `移送${index + 1}`;
+    case "Others":
+      return index === 0 ? "Function配列名" : `定数名または補助説明名${index > 1 ? index : ""}`;
+    default:
+      return `セクション${index + 1}`;
+  }
+}
+
+export function createSectionForDocument(type: DocumentType, index = 0): DocumentSection {
+  const section = createDocumentSection(defaultSectionName(type, index), index);
+  if (type === "FuncSpec") {
+    section.children = [createDocumentSection("起動時")];
+  }
+  if (type === "FuncDetail") {
+    section.children = [createDocumentSection("処理名称")];
+  }
+  if (type === "Others") {
+    section.fields.language = "csharp";
+  }
+  return section;
+}
+
+function defaultSections(type: DocumentType): DocumentSection[] {
+  if (["S-Layout", "R-Layout", "FuncSpec", "Event", "FuncDetail", "Relation", "Check"].includes(type)) {
+    return [createSectionForDocument(type)];
+  }
+  if (type === "Others") {
+    return [createSectionForDocument(type, 0), createSectionForDocument(type, 1)];
+  }
+  return [];
+}
+
 function createDocumentData(type: DocumentType): DocumentData {
   return {
     summary: getDocumentSummary(type),
@@ -241,24 +232,28 @@ function createDocumentData(type: DocumentType): DocumentData {
     tables: {},
     groups: {},
     images: [],
-    screens: type === "S-Layout" ? [createScreenLayoutSection()] : [],
+    screens: [],
+    sections: defaultSections(type),
   };
 }
 
 export function createDefaultDesignPackage(): DesignPackage {
+  const today = localDateString();
   return {
-    schemaVersion: "1.0.0",
+    schemaVersion: "2.0.0",
     common: {
       systemName: "",
       moduleName: "",
       moduleId: "",
+      sourceExcelFile: "",
+      conversionDate: today,
+      date: today,
+      revision: "v1.0",
+      author: "",
       functionId: "",
       functionName: "",
       summary: "",
       documentNumber: "",
-      date: localDateString(),
-      revision: "0.1",
-      author: "",
       notes: "",
     },
     selectedDocuments: [...BASIC_DOCUMENTS],
