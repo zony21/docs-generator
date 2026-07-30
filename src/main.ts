@@ -2,11 +2,12 @@ import "./style-base.css";
 import "./style-components.css";
 import "./style-authoritative.css";
 import { getDocumentDefinition } from "./documentDefinitions";
+import { importExcelWorkbook } from "./excelImporter";
 import { generateDesignPackage, packageRootName, validateDesignPackage } from "./markdownGenerator";
 import { createDefaultDesignPackage, DOCUMENT_TYPES, type DocumentType } from "./model";
 import { clearDraft, loadDraft, saveDraft } from "./storage";
 import type { PageId, UiActions, UiState } from "./uiContext";
-import { renderCommonSection, renderDocumentSelection, renderHero } from "./uiCommonSections";
+import { renderCommonSection, renderDocumentSelection, renderExcelImportSection, renderHero } from "./uiCommonSections";
 import { renderDocumentPage } from "./uiDocumentSections";
 import { renderPageStepper, renderPageTabs } from "./uiNavigation";
 import { element } from "./uiPrimitives";
@@ -85,6 +86,29 @@ function resetDesign(): void {
   render();
 }
 
+async function importExcel(file: File): Promise<void> {
+  try {
+    const result = await importExcelWorkbook(file, state.design);
+    state.design = result.design;
+    state.currentPage = "common";
+    state.selectedPreviewPath = "README.md";
+    state.editingSummary = null;
+    state.editingFields = null;
+    saveDraft(state.design);
+    setMessages(result.warnings);
+    render();
+    const status = document.querySelector<HTMLElement>("#save-status");
+    if (status) {
+      const imported = result.importedDocuments.length > 0
+        ? `取込: ${result.importedDocuments.join("、")}`
+        : "共通情報を取込";
+      status.textContent = `${file.name} / ${imported}`;
+    }
+  } catch (error) {
+    setMessages([error instanceof Error ? error.message : "Excelファイルを取り込めませんでした。"]);
+  }
+}
+
 async function exportZip(exportButton: HTMLButtonElement): Promise<void> {
   const errors = validateDesignPackage(state.design);
   if (errors.length > 0) {
@@ -113,13 +137,19 @@ const actions: UiActions = {
   updatePreview: () => updatePreview(state),
   navigate,
   resetDesign,
+  importExcel,
   exportZip,
 };
 
 function renderCurrentPage(main: HTMLElement): void {
   if (state.currentPage === "common") {
     const stack = element("div", "settings-page-stack");
-    stack.append(renderCommonSection(state, actions), renderDocumentSelection(state, actions), renderPageStepper(state, actions));
+    stack.append(
+      renderExcelImportSection(actions),
+      renderCommonSection(state, actions),
+      renderDocumentSelection(state, actions),
+      renderPageStepper(state, actions),
+    );
     main.append(stack);
     return;
   }

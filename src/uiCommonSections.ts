@@ -48,7 +48,7 @@ export function renderExcelImportSection(actions: UiActions): HTMLElement {
   async function handleFile(file: File | undefined): Promise<void> {
     if (!file) return;
     if (!isXlsx(file)) {
-      actions.setMessages(["現在対応している形式は .xlsx のみです。"]);
+      actions.setMessages(["現在対応している形式は .xlsx のみです。"]);
       return;
     }
     input.disabled = true;
