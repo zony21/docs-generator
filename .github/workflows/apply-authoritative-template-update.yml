@@ -1,11 +1,17 @@
 name: Apply authoritative template update
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/authoritative-template-alignment
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
     paths:
       - .github/workflows/apply-authoritative-template-update.yml
+      - .authoritative-update.part*
 
 permissions:
   contents: write
@@ -14,9 +20,10 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout pull request branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Apply prepared source archive
@@ -27,7 +34,16 @@ jobs:
           rm -f .authoritative-update.part*
           rm -f .github/workflows/apply-authoritative-template-update.yml
 
-      - name: Commit generated changes
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Commit validated changes
         shell: bash
         run: |
           set -euo pipefail
@@ -38,4 +54,4 @@ jobs:
             exit 0
           fi
           git commit -m "feat: align generator with authoritative templates"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
