@@ -1,77 +1,88 @@
-import { getDocumentDefinition, sortDocumentTypes } from "./documentDefinitions";
-import { imageAssetPath, isLayoutDocument } from "./imageAssets";
-import type { DesignPackage, DocumentType, LayoutImage } from "./model";
-import { documentSpecificTokens } from "./markdownTokens";
+import { buildDocumentMarkdown } from "./documentContentBuilder";
+import { DOCUMENT_DEFINITIONS, getDocumentDefinition, sortDocumentTypes } from "./documentDefinitions";
+import type { DesignPackage, DocumentType } from "./model";
 import {
   commonTokens,
   findUnresolvedTokens,
+  normalizeMarkdown,
   packageRootName,
   replaceTokens,
-  summaryTokens,
 } from "./markdownUtils";
-import { getDocumentTemplate, getReadmeTemplate } from "./templateLoader";
+import { getReadmeTemplate, getTemplateGuide } from "./templateLoader";
 
-export { escapeMarkdownCell, findUnresolvedTokens, markdownTableRows, numberedList, packageRootName, replaceTokens, sanitizePackageName, sqlCodeBlock } from "./markdownUtils";
+export {
+  bulletList,
+  escapeMarkdownCell,
+  findUnresolvedTokens,
+  markdownTableRows,
+  numberedList,
+  packageRootName,
+  replaceTokens,
+  sanitizePackageName,
+  sqlCodeBlock,
+} from "./markdownUtils";
 
 export interface GeneratedTextFile { kind: "text"; path: string; content: string }
 export interface GeneratedBinaryFile { kind: "binary"; path: string; content: File }
 export type GeneratedFile = GeneratedTextFile | GeneratedBinaryFile;
 export interface GenerationResult { rootDirectory: string; files: GeneratedFile[] }
 
-function layoutImages(design: DesignPackage, type: "S-Layout" | "R-Layout"): LayoutImage[] {
-  if (type === "S-Layout") {
-    return design.documents[type].screens.flatMap((screen) => screen.image ? [screen.image] : []);
-  }
-  return design.documents[type].images;
-}
-
 export function validateDesignPackage(design: DesignPackage): string[] {
   const errors: string[] = [];
   const required: Array<[string, string]> = [
     ["システム名", design.common.systemName],
-    ["機能ID", design.common.functionId],
-    ["機能名", design.common.functionName],
-    ["作成日", design.common.date],
+    ["モジュール名", design.common.moduleName],
+    ["モジュールID", design.common.moduleId],
+    ["文書日付", design.common.date],
     ["Rev", design.common.revision],
     ["作成者", design.common.author],
   ];
-  for (const [label, value] of required) if (!value.trim()) errors.push(`${label}を入力してください。`);
-  if (design.selectedDocuments.length === 0) errors.push("作成する設計書を1件以上選択してください。");
-  if (!packageRootName(design)) errors.push("出力フォルダ名を作成できません。機能IDと機能名を確認してください。");
-  for (const type of ["S-Layout", "R-Layout"] as const) {
-    for (const image of layoutImages(design, type)) {
-      if (!image.file) errors.push(`${type}の画像「${image.title || image.outputFileName}」を再選択してください。`);
-    }
+  for (const [fieldLabel, value] of required) {
+    if (!value.trim()) errors.push(`${fieldLabel}を入力してください。`);
   }
+  if (design.selectedDocuments.length === 0) errors.push("作成する設計書を1件以上選択してください。");
+  if (!packageRootName(design)) errors.push("出力フォルダ名を作成できません。モジュールIDとモジュール名を確認してください。");
   return errors;
 }
 
-function assertResolved(label: string, content: string): void {
+function assertResolved(fileLabel: string, content: string): void {
   const unresolved = findUnresolvedTokens(content);
-  if (unresolved.length > 0) throw new Error(`${label}: 未置換トークンがあります: ${unresolved.join(", ")}`);
+  if (unresolved.length > 0) throw new Error(`${fileLabel}: 未置換トークンがあります: ${unresolved.join(", ")}`);
 }
 
-function buildDocument(design: DesignPackage, type: DocumentType, generatedAt: string): GeneratedTextFile {
-  const data = design.documents[type];
-  const content = replaceTokens(getDocumentTemplate(type), {
-    ...commonTokens(design, generatedAt),
-    ...summaryTokens(data),
-    ...documentSpecificTokens(design, type, data),
-  });
+function buildDocument(design: DesignPackage, type: DocumentType): GeneratedTextFile {
+  const content = buildDocumentMarkdown(design, type, design.documents[type]);
   assertResolved(type, content);
   return { kind: "text", path: getDocumentDefinition(type).outputPath, content };
 }
 
+function readmeTable(selected: readonly DocumentType[]): string {
+  const selectedSet = new Set(selected);
+  const rows = DOCUMENT_DEFINITIONS
+    .filter((definition) => selectedSet.has(definition.type))
+    .map((definition, index) =>
+      `| ${index + 1} | [${definition.outputPath}](${definition.outputPath}) | ${definition.purpose} | ${definition.incrementUnit} |`,
+    );
+  return [
+    "| No. | Markdown | 用途 | 増やす単位 |",
+    "| ---: | --- | --- | --- |",
+    ...rows,
+  ].join("\n");
+}
+
 function buildReadme(design: DesignPackage, selected: readonly DocumentType[], generatedAt: string): GeneratedTextFile {
-  const sheetRows = selected.map((type) => `| ${type} | [sheets/${type}.md](sheets/${type}.md) |`).join("\n");
-  const packageNotes = [design.common.summary, design.common.notes].filter((value) => value.trim()).join("\n\n");
-  const content = replaceTokens(getReadmeTemplate(), {
-    ...commonTokens(design, generatedAt),
-    SHEET_INDEX_ROWS: sheetRows,
-    PACKAGE_NOTES: packageNotes,
-  });
+  const template = getReadmeTemplate();
+  const withSelectedFiles = template.replace(
+    /\| No\. \| Markdown \| 用途 \| 増やす単位 \|[\s\S]*?(?=\n\n## 注意事項)/,
+    readmeTable(selected),
+  );
+  const content = replaceTokens(withSelectedFiles, commonTokens(design, generatedAt));
   assertResolved("README", content);
   return { kind: "text", path: "README.md", content };
+}
+
+function buildTemplateGuide(): GeneratedTextFile {
+  return { kind: "text", path: "TEMPLATE_GUIDE.md", content: normalizeMarkdown(getTemplateGuide()) };
 }
 
 export function generateDesignPackage(
@@ -84,20 +95,12 @@ export function generateDesignPackage(
     if (errors.length > 0) throw new Error(errors.join("\n"));
   }
   const selected = sortDocumentTypes(design.selectedDocuments);
-  const textFiles = [buildReadme(design, selected, generatedAt), ...selected.map((type) => buildDocument(design, type, generatedAt))];
-  const binaryFiles: GeneratedBinaryFile[] = [];
-  for (const type of selected) {
-    if (!isLayoutDocument(type)) continue;
-    for (const image of [...layoutImages(design, type)].sort((left, right) => left.order - right.order)) {
-      if (image.file) binaryFiles.push({ kind: "binary", path: imageAssetPath(type, image), content: image.file });
-    }
-  }
-  const paths = new Set([...textFiles, ...binaryFiles].map((file) => file.path));
-  for (const type of selected) {
-    if (!isLayoutDocument(type)) continue;
-    for (const image of layoutImages(design, type)) {
-      if (image.file && !paths.has(imageAssetPath(type, image))) throw new Error(`${type}: 画像参照先が出力対象にありません。`);
-    }
-  }
-  return { rootDirectory: packageRootName(design), files: [...textFiles, ...binaryFiles] };
+  const files: GeneratedFile[] = [
+    buildReadme(design, selected, generatedAt),
+    buildTemplateGuide(),
+    ...selected.map((type) => buildDocument(design, type)),
+  ];
+  const paths = files.map((file) => file.path);
+  if (new Set(paths).size !== paths.length) throw new Error("出力ファイル名が重複しています。");
+  return { rootDirectory: packageRootName(design), files };
 }

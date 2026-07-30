@@ -1,35 +1,32 @@
 # Event
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: Event
-- File: `sheets/Event.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `Event`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+<!-- 画面ごとに以下のセクションを追加します。 -->
 
-### 4.1 Event list
-| Event Name | Trigger | Target Function/Process | Remarks |
-| --- | --- | --- | --- |
-{{EVENT_ROWS}}
+## [画面名]
 
-### 4.2 Additional event notes
-{{EVENT_NOTES}}
+| No | イベント名称／処理名称 | コントロール | 起動タイミング | 継承メソッド | 概要／備考 |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | 初期処理 | 画面：フォーム | 画面起動時 | [継承メソッド名] | [初期表示、初期値設定、一覧表示など] |
+| 2 | 「[ボタン名]」ボタン押下 | ファンクション：[Fn] | クリック or キーダウン | [キー/ボタン処理] | [処理概要] |
+| 3 | [一覧選択イベント] | [一覧コントロール名] | 選択変更時 | [メソッド名] | [処理概要] |
+
+## [サブ画面名]
+
+| No | イベント名称／処理名称 | コントロール | 起動タイミング | 継承メソッド | 概要／備考 |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | 起動処理 | 画面：フォーム | 画面起動時 | [メソッド名] | [呼出し元から受け取った内容を表示する等] |
+| 2 | 「[確定]」ボタン押下 | ファンクション：[Fn] | クリック or キーダウン | [キー/ボタン処理] | [登録、更新、削除など] |
+| 3 | 「[キャンセル]」ボタン押下 | ファンクション：[Fn] | クリック or キーダウン | [キー/ボタン処理] | 本画面を終了する。 |

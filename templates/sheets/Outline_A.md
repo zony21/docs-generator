@@ -1,40 +1,25 @@
 # Outline_A
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: Outline_A
-- File: `sheets/Outline_A.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `Outline_A`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+## 機能概要
 
-### 4.1 System/module purpose
-{{PURPOSE}}
+- [この機能で利用者ができること]
+- [この画面または処理が提供する主な価値]
+- [表示、登録、更新、削除、照会などの概要]
 
-### 4.2 Scope and target users/process
-{{SCOPE_TARGET}}
+## 対象範囲
 
-### 4.3 High-level operation flow
-{{OPERATION_FLOW}}
-
-### 4.4 Preconditions/postconditions
-- Preconditions: {{PRECONDITIONS}}
-- Postconditions: {{POSTCONDITIONS}}
+- 対象: [対象業務、対象画面、対象データ]
+- 対象外: [この設計書では扱わない範囲]

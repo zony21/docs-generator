@@ -1,38 +1,98 @@
 # FuncDetail
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: FuncDetail
-- File: `sheets/FuncDetail.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `FuncDetail`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+<!--
+処理名称ごとに `### [処理名称]` を追加します。
+try / catch / finally、条件分岐、foreach、SQL呼び出し、共通メソッド呼び出しは構造を崩さず箇条書きで記載します。
+-->
 
-### 4.1 Processing units
-{{PROCESSING_UNIT_BLOCKS}}
+## [画面名]
 
-### 4.2 Internal flow
-{{INTERNAL_FLOW_BLOCKS}}
+**概要:** [画面または処理群の概要]
 
-### 4.3 Cross references
-- Check: [Check.md](Check.md)
-- Others: [Others.md](Others.md)
-- Relation: [Relation.md](Relation.md)
+### [処理名称]
+
+| 項目 | 内容 |
+| --- | --- |
+| 関数名 | `[関数名またはメソッド名]` |
+| 関数種別 | [継承メソッド / 個別メソッド / SQL / コンストラクタ / イベント] |
+| 概要 | [処理概要] |
+| 参照Sheet | [Relation / Others / Check など。ない場合は空欄] |
+| 備考 | [コード断片、補足、呼出し先など。ない場合は空欄] |
+
+- **try**
+  - [共通処理開始ログを呼ぶ。備考: `base.BtnClickLogBefore(sender);`]
+  - [基底クラスまたは共通部品の処理を呼ぶ。備考: `base.Common_KeyDownXX(sender, e);`]
+  - **[処理ブロック名]**
+    - [具体的な処理]
+    - [参照Sheet: Relation / 備考: SQL名]
+  - **入力チェック**
+    - [チェック条件]
+    - [エラーメッセージ表示]
+    - [処理を終了する]
+  - **確認処理**
+    - [確認メッセージ]
+    - [肯定応答の場合のみ続行]
+  - **トランザクション開始**
+    - [登録、更新、削除処理]
+    - [commit]
+- **catch（すべての例外）**
+  - [例外共通処理を呼ぶ。備考: `base.ExceptionMethod(ex);`]
+- **finally**
+  - [終了ログ、設定復元、リソース解放]
+
+### [SQL取得処理名]
+
+| 項目 | 内容 |
+| --- | --- |
+| 関数名 | `[private DataTable SelectXxx()]` |
+| 関数種別 | 個別メソッド(SQL) |
+| 概要 | [データを取得する。] |
+| 参照Sheet | Relation |
+| 備考 | [SQL名] |
+
+- データベースコマンドの設定を行う。
+- 検索項目が空でなければ WHERE 句に付加する。
+- SQLを実行し、結果を返す。
+
+### [入力チェック処理名]
+
+| 項目 | 内容 |
+| --- | --- |
+| 関数名 | `[private bool XxxCheckInput()]` |
+| 関数種別 | 個別メソッド(通常) |
+| 概要 | 入力チェックを実施する。 |
+
+- 標準の入力チェックを実施する。
+- 戻り値が false の場合は処理終了する。
+- 正常時は true を返す。
+
+### [論理／排他チェック処理名]
+
+| 項目 | 内容 |
+| --- | --- |
+| 関数名 | `[private bool XxxCheckLogic()]` |
+| 関数種別 | 個別メソッド(通常) |
+| 概要 | 論理チェックおよび排他チェックを実施する。 |
+| 参照Sheet | Relation |
+
+- 対象データを取得する。
+- 件数0件の場合
+  - エラーメッセージを表示する。
+  - false を返す。
+- 実行不可状態の場合
+  - エラーメッセージを表示する。
+  - false を返す。
+- 正常時は true を返す。

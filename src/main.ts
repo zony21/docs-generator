@@ -1,8 +1,7 @@
 import "./style-base.css";
 import "./style-components.css";
-import "./style-s-layout.css";
+import "./style-authoritative.css";
 import { getDocumentDefinition } from "./documentDefinitions";
-import { revokeImagePreview } from "./imageAssets";
 import { generateDesignPackage, packageRootName, validateDesignPackage } from "./markdownGenerator";
 import { createDefaultDesignPackage, DOCUMENT_TYPES, type DocumentType } from "./model";
 import { clearDraft, loadDraft, saveDraft } from "./storage";
@@ -66,25 +65,15 @@ function navigate(page: PageId): void {
   state.currentPage = page;
   state.editingSummary = null;
   state.editingFields = null;
-  if (page === "common" || page === "tables") {
-    state.selectedPreviewPath = "README.md";
-  } else {
-    state.selectedPreviewPath = getDocumentDefinition(page).outputPath;
-  }
+  state.selectedPreviewPath = page === "common" || page === "tables"
+    ? "README.md"
+    : getDocumentDefinition(page).outputPath;
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function revokeAllImages(): void {
-  for (const screen of state.design.documents["S-Layout"].screens) {
-    if (screen.image) revokeImagePreview(screen.image);
-  }
-  for (const image of state.design.documents["R-Layout"].images) revokeImagePreview(image);
-}
-
 function resetDesign(): void {
   if (!window.confirm("入力内容と自動保存データをすべて削除しますか？")) return;
-  revokeAllImages();
   state.design = createDefaultDesignPackage();
   state.selectedPreviewPath = "README.md";
   state.currentPage = "common";
@@ -110,7 +99,7 @@ async function exportZip(exportButton: HTMLButtonElement): Promise<void> {
     downloadBlob(await createZipBlob(result), `${packageRootName(state.design)}.zip`);
     setMessages([]);
   } catch (error) {
-    setMessages([error instanceof Error ? error.message : "ZIPを出力できませんでした."]);
+    setMessages([error instanceof Error ? error.message : "ZIPを出力できませんでした。"]) ;
   } finally {
     exportButton.disabled = false;
     exportButton.textContent = "ZIPを出力";
@@ -130,28 +119,21 @@ const actions: UiActions = {
 function renderCurrentPage(main: HTMLElement): void {
   if (state.currentPage === "common") {
     const stack = element("div", "settings-page-stack");
-    stack.append(
-      renderCommonSection(state, actions),
-      renderDocumentSelection(state, actions),
-      renderPageStepper(state, actions),
-    );
+    stack.append(renderCommonSection(state, actions), renderDocumentSelection(state, actions), renderPageStepper(state, actions));
     main.append(stack);
     return;
   }
-
   if (state.currentPage === "tables") {
     const stack = element("div", "settings-page-stack");
     stack.append(renderTableCatalogSection(state, actions), renderPageStepper(state, actions));
     main.append(stack);
     return;
   }
-
   if (!DOCUMENT_TYPES.includes(state.currentPage as DocumentType)) {
     state.currentPage = "common";
     renderCurrentPage(main);
     return;
   }
-
   const type = state.currentPage as DocumentType;
   if (!state.design.selectedDocuments.includes(type)) {
     state.currentPage = "common";
@@ -178,11 +160,5 @@ function render(): void {
   renderMessages();
   updatePreview(state);
 }
-
-window.addEventListener("beforeunload", (event) => {
-  const hasScreenImages = state.design.documents["S-Layout"].screens.some((screen) => screen.image?.file);
-  const hasReportImages = state.design.documents["R-Layout"].images.some((image) => image.file);
-  if (hasScreenImages || hasReportImages) event.preventDefault();
-});
 
 render();

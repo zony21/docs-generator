@@ -1,43 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { DOCUMENT_DEFINITIONS } from "../src/documentDefinitions";
 import { BASIC_DOCUMENTS, DOCUMENT_TYPES } from "../src/model";
-import { getAllTemplates, getReadmeTemplate } from "../src/templateLoader";
+import { getAllTemplates, getReadmeTemplate, getTemplateGuide } from "../src/templateLoader";
 
-const COMMON_TOKENS = [
-  "{{SYSTEM_NAME}}",
-  "{{FUNCTION_ID}}",
-  "{{FUNCTION_NAME}}",
-  "{{GENERATED_AT}}",
-  "{{MAIN_CONTENT}}",
-];
-
-describe("template validation", () => {
-  it("loads README and all 12 document templates", () => {
-    expect(getReadmeTemplate()).toContain("{{SHEET_INDEX_ROWS}}");
+describe("authoritative template validation", () => {
+  it("loads README, guide, and all 12 authoritative templates", () => {
+    expect(getReadmeTemplate()).toContain("設計書 Markdown テンプレート");
+    expect(getTemplateGuide()).toContain("セクション増減の考え方");
     expect(Object.keys(getAllTemplates())).toEqual([...DOCUMENT_TYPES]);
   });
 
-  it("defines unique template and output paths", () => {
-    const templatePaths = DOCUMENT_DEFINITIONS.map((definition) => definition.templatePath);
-    const outputPaths = DOCUMENT_DEFINITIONS.map((definition) => definition.outputPath);
-    expect(new Set(templatePaths).size).toBe(DOCUMENT_DEFINITIONS.length);
-    expect(new Set(outputPaths).size).toBe(DOCUMENT_DEFINITIONS.length);
+  it("uses root-level output paths matching README links", () => {
+    for (const definition of DOCUMENT_DEFINITIONS) {
+      expect(definition.outputPath).toBe(`${definition.type}.md`);
+    }
   });
 
   it("marks exactly the basic six documents as defaults", () => {
-    const defaults = DOCUMENT_DEFINITIONS
-      .filter((definition) => definition.selectedByDefault)
-      .map((definition) => definition.type);
-    expect(defaults).toEqual([...BASIC_DOCUMENTS]);
+    expect(DOCUMENT_DEFINITIONS.filter((definition) => definition.selectedByDefault).map((definition) => definition.type)).toEqual([...BASIC_DOCUMENTS]);
   });
 
-  it("contains common tokens and one configurable main-content token", () => {
-    for (const template of Object.values(getAllTemplates())) {
-      for (const token of COMMON_TOKENS) {
-        expect(template).toContain(token);
-      }
-      expect(template).toContain("## 4. 設計内容");
-      expect(template.match(/{{MAIN_CONTENT}}/g)).toHaveLength(1);
-    }
+  it("preserves the key authoritative structures", () => {
+    const templates = getAllTemplates();
+    expect(templates["S-Layout"]).toContain("### 画面項目");
+    expect(templates["S-Layout"]).toContain("### フッター");
+    expect(templates.FuncDetail).toContain("| 参照Sheet |");
+    expect(templates.Relation).toContain("### 移送元／移送先");
+    expect(templates.Check).toContain("メッセージ引数 | メッセージ");
+    expect(templates.Outline_B).toContain("## CRUD表");
   });
 });

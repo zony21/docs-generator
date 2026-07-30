@@ -2,25 +2,22 @@ import { describe, expect, it } from "vitest";
 import { setInputFieldPreference } from "../src/inputFieldDefinitions";
 import {
   escapeMarkdownCell,
-  findUnresolvedTokens,
   generateDesignPackage,
   markdownTableRows,
   numberedList,
   packageRootName,
   sqlCodeBlock,
 } from "../src/markdownGenerator";
-import { createDefaultDesignPackage, DOCUMENT_TYPES } from "../src/model";
+import { createDefaultDesignPackage, createDocumentSection, createSectionForDocument, DOCUMENT_TYPES } from "../src/model";
 
 function validDesign() {
   const design = createDefaultDesignPackage();
   Object.assign(design.common, {
-    systemName: "SES-APP",
-    moduleName: "契約管理",
-    moduleId: "KY",
-    functionId: "KY01",
-    functionName: "契約一覧",
-    summary: "契約を検索し一覧表示する。",
-    author: "久野",
+    systemName: "WMS",
+    moduleName: "品目マスタ",
+    moduleId: "Awcs_M001",
+    sourceExcelFile: "docs/source/item-master.xlsx",
+    author: "担当者",
   });
   return design;
 }
@@ -31,145 +28,144 @@ function textFileContent(design: ReturnType<typeof validDesign>, path: string): 
   return file?.kind === "text" ? file.content : "";
 }
 
-describe("markdown generator", () => {
-  it("escapes tables without changing input order", () => {
+describe("authoritative markdown generator", () => {
+  it("keeps markdown utility behavior", () => {
     expect(escapeMarkdownCell("A|B\nC")).toBe("A\\|B<br>C");
-    expect(markdownTableRows([
-      { name: "first", value: "1" },
-      { name: "second", value: "2" },
-    ], ["name", "value"])).toBe("| first | 1 |\n| second | 2 |");
+    expect(markdownTableRows([{ name: "first", value: "1" }], ["name", "value"])).toBe("| first | 1 |");
+    expect(numberedList("入力\n検索")).toBe("1. 入力\n2. 検索");
+    expect(sqlCodeBlock("SELECT 1")).toBe("```sql\nSELECT 1\n```");
   });
 
-  it("creates numbered lists and SQL fences", () => {
-    expect(numberedList("入力\n\n検索\n表示")).toBe("1. 入力\n2. 検索\n3. 表示");
-    expect(sqlCodeBlock("SELECT *\n  FROM T")).toBe("```sql\nSELECT *\n  FROM T\n```");
-    expect(sqlCodeBlock(" ")).toBe("");
-  });
-
-  it("generates README and the basic six documents", () => {
+  it("generates README, template guide, and root-level selected documents", () => {
     const design = validDesign();
-    design.documents.Outline_A.text.operationFlow = "条件入力\n検索\n一覧表示";
-    design.documents.Outline_B.tables.crud = [{ category: "Read", description: "契約一覧を取得" }];
-    design.documents.Relation.groups.relations = [{
-      sourceName: "T_CONTRACT",
-      sourceCondition: "有効な契約",
-      destinationName: "契約一覧DTO",
-      destinationCondition: "表示対象",
-      sql: "SELECT *\nFROM T_CONTRACT",
-      notes: "",
-    }];
-
-    const result = generateDesignPackage(design, "2026-07-29T06:30:00.000Z");
-    const textFiles = result.files.filter((file) => file.kind === "text");
-    expect(result.rootDirectory).toBe("KY01_契約一覧");
-    expect(textFiles.map((file) => file.path)).toEqual([
+    const result = generateDesignPackage(design, "2026-07-30T06:00:00.000Z");
+    expect(result.rootDirectory).toBe("Awcs_M001_品目マスタ");
+    expect(result.files.filter((file) => file.kind === "text").map((file) => file.path)).toEqual([
       "README.md",
-      "sheets/Hist.md",
-      "sheets/Outline_A.md",
-      "sheets/Outline_B.md",
-      "sheets/FuncSpec.md",
-      "sheets/FuncDetail.md",
-      "sheets/Relation.md",
+      "TEMPLATE_GUIDE.md",
+      "Hist.md",
+      "Outline_A.md",
+      "Outline_B.md",
+      "FuncSpec.md",
+      "FuncDetail.md",
+      "Relation.md",
     ]);
-    expect(textFiles[0].content).toContain("[sheets/Relation.md](sheets/Relation.md)");
-    expect(textFiles.find((file) => file.path === "sheets/Hist.md")?.content).toContain("- タイトル: 改版履歴 History");
-    expect(textFiles.find((file) => file.path === "sheets/Outline_A.md")?.content).toContain("1. 条件入力");
-    expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("- イベント・チェック・機能名: Data transfer / I/O mapping");
-    expect(textFiles.find((file) => file.path === "sheets/Relation.md")?.content).toContain("```sql\nSELECT *\nFROM T_CONTRACT\n```");
-    for (const file of textFiles) {
-      expect(findUnresolvedTokens(file.content)).toEqual([]);
-    }
+    const readme = textFileContent(design, "README.md");
+    expect(readme).toContain("# WMS / 品目マスタ 設計書 Markdown テンプレート");
+    expect(readme).toContain("[Hist.md](Hist.md)");
+    expect(readme).not.toContain("S-Layout.md](S-Layout.md)");
   });
 
-  it("uses edited sheet summaries", () => {
-    const design = validDesign();
-    design.selectedDocuments = ["FuncDetail"];
-    design.documents.FuncDetail.summary.sheetTitle = "受信処理の機能詳細";
-    design.documents.FuncDetail.summary.timing = "メッセージ受信時";
-    const detail = textFileContent(design, "sheets/FuncDetail.md");
-    expect(detail).toContain("- タイトル: 受信処理の機能詳細");
-    expect(detail).toContain("- タイミング: メッセージ受信時");
-  });
-
-  it("omits disabled text fields and uses edited Japanese labels", () => {
+  it("renders the authoritative common information table", () => {
     const design = validDesign();
     design.selectedDocuments = ["Outline_A"];
-    design.documents.Outline_A.text.purpose = "出力してはいけない目的";
-    design.documents.Outline_A.text.scopeTarget = "契約管理担当者";
-    setInputFieldPreference(design, "Outline_A", "purpose", { label: "目的", enabled: false });
-    setInputFieldPreference(design, "Outline_A", "scopeTarget", { label: "利用対象", enabled: true });
-
-    const outline = textFileContent(design, "sheets/Outline_A.md");
-    expect(outline).not.toContain("出力してはいけない目的");
-    expect(outline).not.toContain("### 4.1 目的");
-    expect(outline).toContain("### 4.1 利用対象");
-    expect(outline).toContain("契約管理担当者");
+    design.documents.Outline_A.text.overview = "一覧を表示する";
+    const content = textFileContent(design, "Outline_A.md");
+    expect(content).toContain("- 元シート名: `Outline_A`");
+    expect(content).toContain("| System Name | WMS |");
+    expect(content).toContain("| Module ID | Awcs_M001 |");
+    expect(content).toContain("## 機能概要\n\n- 一覧を表示する");
   });
 
-  it("omits disabled table columns and removes a table when all columns are disabled", () => {
+  it("renders multiple S-Layout screens without the removed spacer or image column", () => {
     const design = validDesign();
-    design.selectedDocuments = ["Outline_B"];
-    design.documents.Outline_B.tables.crud = [{ category: "Read", description: "契約一覧を取得" }];
-    design.documents.Outline_B.tables.resources = [{ type: "Table", name: "T_CONTRACT", notes: "契約" }];
-    setInputFieldPreference(design, "Outline_B", "crud.category", { label: "区分", enabled: false });
-    setInputFieldPreference(design, "Outline_B", "crud.description", { label: "処理内容", enabled: true });
-    for (const key of ["resources.type", "resources.name", "resources.notes"]) {
-      setInputFieldPreference(design, "Outline_B", key, { label: key, enabled: false });
-    }
-
-    const outline = textFileContent(design, "sheets/Outline_B.md");
-    expect(outline).toContain("| 処理内容 |");
-    expect(outline).toContain("| 契約一覧を取得 |");
-    expect(outline).not.toContain("| 区分 |");
-    expect(outline).not.toContain("Read");
-    expect(outline).not.toContain("関連テーブル・マスタ・インターフェース");
-    expect(outline).not.toContain("T_CONTRACT");
+    design.selectedDocuments = ["S-Layout"];
+    const first = design.documents["S-Layout"].sections[0];
+    first.name = "第一画面";
+    first.fields.notes = "CSV取込中は操作不可";
+    first.tables.items = [{ itemName: "品目コード", type: "txt", io: "In", length: "10", required: "", screenMode1: "○", screenMode2: "", screenMode3: "", notes: "半角", focusMessage: "" }];
+    first.tables.footer = [{ itemName: "検索", type: "btn", io: "In" }];
+    const second = createSectionForDocument("S-Layout", 1);
+    second.name = "第二画面";
+    design.documents["S-Layout"].sections.push(second);
+    const content = textFileContent(design, "S-Layout.md");
+    expect(content).toContain("## 第一画面");
+    expect(content).toContain("### 備考\n\n- CSV取込中は操作不可");
+    expect(content).toContain("| No | 項目名称 | タイプ | I/O | 桁数 | 必須 | 画面モード① | 画面モード② | 画面モード③ | 備考 | フォーカス時メッセージ |");
+    expect(content).not.toContain("| - |");
+    expect(content).not.toContain("![");
+    expect(content).toContain("## 第二画面");
   });
 
-  it("does not leak disabled group values", () => {
+  it("renders nested screens and processes for FuncSpec and FuncDetail", () => {
     const design = validDesign();
-    design.selectedDocuments = ["FuncDetail"];
-    design.documents.FuncDetail.groups.units = [{
-      processingName: "非表示処理名",
-      methodName: "handleRequest",
-      functionType: "service",
-      summary: "受信処理",
-      normalFlow: "通常処理",
-      exceptionFlow: "例外処理",
-      finallyFlow: "終了処理",
-      relatedDocuments: "Relation.md",
-    }];
-    setInputFieldPreference(design, "FuncDetail", "units.processingName", { label: "処理名", enabled: false });
-    setInputFieldPreference(design, "FuncDetail", "units.methodName", { label: "メソッド", enabled: true });
-    setInputFieldPreference(design, "FuncDetail", "units.exceptionFlow", { label: "異常時", enabled: false });
-
-    const detail = textFileContent(design, "sheets/FuncDetail.md");
-    expect(detail).not.toContain("非表示処理名");
-    expect(detail).not.toContain("例外処理");
-    expect(detail).toContain("- メソッド: handleRequest");
-    expect(detail).toContain("**通常処理（try）**");
+    design.selectedDocuments = ["FuncSpec", "FuncDetail"];
+    const spec = design.documents.FuncSpec.sections[0];
+    spec.name = "一覧画面";
+    spec.children[0].name = "「検索」ボタン";
+    spec.children[0].fields.content = "- 入力された検索条件を付加する。";
+    const detail = design.documents.FuncDetail.sections[0];
+    detail.name = "一覧画面";
+    detail.fields.overview = "検索処理群";
+    detail.children[0].name = "検索処理";
+    Object.assign(detail.children[0].fields, {
+      functionName: "Search()",
+      functionType: "個別メソッド",
+      summary: "一覧を検索する。",
+      referenceSheet: "Relation",
+      steps: "- SQLを実行する。",
+    });
+    expect(textFileContent(design, "FuncSpec.md")).toContain("### 「検索」ボタン\n\n- 入力された検索条件を付加する。");
+    const detailContent = textFileContent(design, "FuncDetail.md");
+    expect(detailContent).toContain("## 一覧画面");
+    expect(detailContent).toContain("| 関数名 | Search() |");
+    expect(detailContent).toContain("- SQLを実行する。");
   });
 
-  it("generates all selected documents in the defined order", () => {
+  it("renders Relation by transfer unit with SQL and mappings", () => {
+    const design = validDesign();
+    design.selectedDocuments = ["Relation"];
+    const transfer = design.documents.Relation.sections[0];
+    transfer.name = "商品検索";
+    Object.assign(transfer.fields, {
+      transferType: "Select",
+      condition: "削除フラグ = 0",
+      sortOrder: "品目コード",
+      arguments: "ownerCode",
+      sql: "SELECT * FROM M_ITEM",
+    });
+    transfer.tables.mappings = [{ sourceTable: "M_ITEM", sourceColumn: "ITEM_CD", sourceItem: "品目コード", destinationTable: "ItemDto", destinationColumn: "itemCode", destinationItem: "品目コード", notes: "" }];
+    const content = textFileContent(design, "Relation.md");
+    expect(content).toContain("## 商品検索");
+    expect(content).toContain("| 移送区分 | Select |");
+    expect(content).toContain("```sql\nSELECT * FROM M_ITEM\n```");
+    expect(content).toContain("| M_ITEM | ITEM_CD | 品目コード | ItemDto | itemCode | 品目コード |  |");
+  });
+
+  it("links field visibility and edited labels to generated Markdown", () => {
+    const design = validDesign();
+    design.selectedDocuments = ["Check"];
+    const section = design.documents.Check.sections[0];
+    section.name = "一覧画面";
+    section.tables.checks = [{ checkItem: "品目コード", type: "必須", detail: "未入力はエラー", messageId: "E001", messageArguments: "品目コード", message: "入力してください" }];
+    setInputFieldPreference(design, "Check", "checks.detail", { label: "判定内容", enabled: true });
+    setInputFieldPreference(design, "Check", "checks.messageArguments", { label: "メッセージ引数", enabled: false });
+    const content = textFileContent(design, "Check.md");
+    expect(content).toContain("| No | チェック項目 | 種別 | 判定内容 | メッセージID | メッセージ |");
+    expect(content).not.toContain("メッセージ引数");
+    expect(content).not.toContain("| 品目コード | 入力してください |" );
+  });
+
+  it("generates all selected documents in template order", () => {
     const design = validDesign();
     design.selectedDocuments = [...DOCUMENT_TYPES];
-    const result = generateDesignPackage(design);
-    const paths = result.files.filter((file) => file.kind === "text").map((file) => file.path);
-    expect(paths).toEqual(["README.md", ...DOCUMENT_TYPES.map((type) => `sheets/${type}.md`)]);
+    const paths = generateDesignPackage(design).files.filter((file) => file.kind === "text").map((file) => file.path);
+    expect(paths).toEqual(["README.md", "TEMPLATE_GUIDE.md", ...DOCUMENT_TYPES.map((type) => `${type}.md`)]);
   });
 
-  it("removes unselected cross references", () => {
+  it("sanitizes package names from module metadata", () => {
     const design = validDesign();
-    design.selectedDocuments = ["FuncDetail"];
-    const detail = textFileContent(design, "sheets/FuncDetail.md");
-    expect(detail).not.toContain("Check.md");
-    expect(detail).not.toContain("Others.md");
-    expect(detail).not.toContain("Relation.md");
+    design.common.moduleName = "品目/検索:管理";
+    expect(packageRootName(design)).toBe("Awcs_M001_品目_検索_管理");
   });
 
-  it("sanitizes the package root name", () => {
+  it("allows arbitrary additional process sections", () => {
     const design = validDesign();
-    design.common.functionName = "契約/一覧:検索";
-    expect(packageRootName(design)).toBe("KY01_契約_一覧_検索");
+    design.selectedDocuments = ["FuncSpec"];
+    const section = design.documents.FuncSpec.sections[0];
+    const child = createDocumentSection("「CSV取込」ボタン", 1);
+    child.fields.content = "- CSVファイルを取り込む。";
+    section.children.push(child);
+    expect(textFileContent(design, "FuncSpec.md")).toContain("### 「CSV取込」ボタン");
   });
 });

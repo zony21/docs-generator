@@ -3,86 +3,56 @@ import { createDefaultDesignPackage } from "../src/model";
 import { loadDraft, saveDraft, STORAGE_KEY } from "../src/storage";
 
 class MemoryStorage implements Storage {
-  private readonly values = new Map<string, string>();
-
-  get length(): number {
-    return this.values.size;
-  }
-
-  clear(): void {
-    this.values.clear();
-  }
-
-  getItem(key: string): string | null {
-    return this.values.get(key) ?? null;
-  }
-
-  key(index: number): string | null {
-    return [...this.values.keys()][index] ?? null;
-  }
-
-  removeItem(key: string): void {
-    this.values.delete(key);
-  }
-
-  setItem(key: string, value: string): void {
-    this.values.set(key, value);
-  }
+  private values = new Map<string, string>();
+  get length() { return this.values.size; }
+  clear() { this.values.clear(); }
+  getItem(key: string) { return this.values.get(key) ?? null; }
+  key(index: number) { return [...this.values.keys()][index] ?? null; }
+  removeItem(key: string) { this.values.delete(key); }
+  setItem(key: string, value: string) { this.values.set(key, value); }
 }
 
-describe("S-Layout storage", () => {
-  it("keeps screen metadata while removing image file handles", () => {
+describe("authoritative draft storage", () => {
+  it("saves and restores nested document sections", () => {
     const storage = new MemoryStorage();
     const design = createDefaultDesignPackage();
-    const file = new File(["image"], "screen.png", { type: "image/png" });
-    const screen = design.documents["S-Layout"].screens[0];
-    screen.name = "第一画面";
-    screen.items = [{ itemName: "品目コード", type: "txt" }];
-    screen.image = {
-      id: "image-1",
-      originalFileName: file.name,
-      outputFileName: file.name,
-      mimeType: "image/png",
-      size: file.size,
-      title: "第一画面",
-      alt: "第一画面",
-      notes: "",
-      order: 1,
-      file,
-      previewUrl: "blob:screen",
-    };
-
+    const process = design.documents.FuncDetail.sections[0].children[0];
+    process.name = "検索処理";
+    process.fields.functionName = "Search";
     saveDraft(design, storage);
-    const raw = storage.getItem(STORAGE_KEY) ?? "";
-    expect(raw).not.toContain("blob:screen");
     const loaded = loadDraft(storage);
-    expect(loaded?.documents["S-Layout"].screens[0].name).toBe("第一画面");
-    expect(loaded?.documents["S-Layout"].screens[0].items[0].itemName).toBe("品目コード");
-    expect(loaded?.documents["S-Layout"].screens[0].image?.outputFileName).toBe("screen.png");
-    expect(loaded?.documents["S-Layout"].screens[0].image?.file).toBeUndefined();
+    expect(loaded?.schemaVersion).toBe("2.0.0");
+    expect(loaded?.documents.FuncDetail.sections[0].children[0].name).toBe("検索処理");
+    expect(loaded?.documents.FuncDetail.sections[0].children[0].fields.functionName).toBe("Search");
   });
 
-  it("migrates the old control and property tables into the first screen", () => {
+  it("migrates v1 S-Layout screens and removes the obsolete spacer field", () => {
     const storage = new MemoryStorage();
-    const legacy = createDefaultDesignPackage() as unknown as Record<string, unknown>;
-    const documents = legacy.documents as Record<string, Record<string, unknown>>;
-    const screenLayout = documents["S-Layout"];
-    delete screenLayout.screens;
-    screenLayout.text = { displayEditRules: "CSV取込は作業中に実施不可" };
-    screenLayout.tables = {
-      controls: [{ controlId: "txtItem", controlName: "品目コード", type: "txt", area: "検索条件" }],
-      properties: [{ controlId: "txtItem", lengthFormat: "10", required: "", remarks: "半角入力" }],
-    };
-    storage.setItem(STORAGE_KEY, JSON.stringify(legacy));
-
+    storage.setItem(STORAGE_KEY, JSON.stringify({
+      schemaVersion: "1.0.0",
+      common: { systemName: "TEST", moduleName: "画面", moduleId: "SC", date: "2026-07-30", revision: "v1.0", author: "担当" },
+      selectedDocuments: ["S-Layout"],
+      documents: {
+        "S-Layout": {
+          screens: [{ id: "1", name: "旧第一画面", notes: "旧備考", order: 1, items: [{ itemName: "項目", separator: "-" }], footerItems: [] }],
+        },
+      },
+    }));
     const loaded = loadDraft(storage);
-    const screen = loaded?.documents["S-Layout"].screens[0];
-    expect(screen?.notes).toBe("CSV取込は作業中に実施不可");
-    expect(screen?.items[0]).toMatchObject({
-      itemName: "品目コード",
-      type: "txt",
-      length: "10",
-      notes: "領域: 検索条件 / 半角入力",
-    });
+    expect(loaded?.documents["S-Layout"].sections[0].name).toBe("旧第一画面");
+    expect(loaded?.documents["S-Layout"].sections[0].fields.notes).toBe("旧備考");
+    expect(loaded?.documents["S-Layout"].sections[0].tables.items[0].separator).toBeUndefined();
+  });
+
+  it("migrates v1 action groups into FuncSpec child processes", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(STORAGE_KEY, JSON.stringify({
+      schemaVersion: "1.0.0",
+      documents: { FuncSpec: { text: { functionUnit: "一覧画面" }, groups: { actions: [{ title: "検索", majorSteps: "条件入力\n一覧表示" }] } } },
+    }));
+    const loaded = loadDraft(storage);
+    expect(loaded?.documents.FuncSpec.sections[0].name).toBe("一覧画面");
+    expect(loaded?.documents.FuncSpec.sections[0].children[0].name).toBe("検索");
+    expect(loaded?.documents.FuncSpec.sections[0].children[0].fields.content).toContain("条件入力");
   });
 });

@@ -1,37 +1,42 @@
 # Check
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: Check
-- File: `sheets/Check.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `Check`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
+| 項目 | 値 |
+| --- | --- |
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-## 4. Main content
+<!-- 画面またはチェックタイミングごとに以下のセクションを追加します。 -->
 
-### 4.1 Validation target context
-- Screen name: {{SCREEN_NAME}}
-- Check name: {{CHECK_NAME}}
-- Timing/trigger: {{CHECK_TIMING_TRIGGER}}
+## [画面名]
 
-### 4.2 Validation table
-| No. | Check Item | Type | Detail | Message ID | Message Arguments |
-| --- | --- | --- | --- | --- | --- |
-{{CHECK_ROWS}}
+| 項目 | 値 |
+| --- | --- |
+| 画面名称 | [画面名] |
+| チェック名称 | [チェック名称。例: 検索時入力チェック / 確定時入力チェック] |
+| タイミング | [画面起動時 / 検索ボタン押下時 / 確定ボタン押下時 / フォーカスアウト時] |
+
+| No | チェック項目 | 種別 | チェック詳細 | メッセージID | メッセージ引数 | メッセージ |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | [項目名] | 必須 | 未入力の場合はエラー | [MSG_ID] | [引数] | [メッセージ文] |
+| 2 | [項目名] | 桁数 | 指定桁数を超過した場合はエラー | [MSG_ID] | [引数] | [メッセージ文] |
+| 3 | [項目名] | その他 | [業務固有の判定条件] | [MSG_ID] | [引数] | [メッセージ文] |
+
+## [画面名: 必要に応じて追加]
+
+| 項目 | 値 |
+| --- | --- |
+| 画面名称 | [画面名] |
+| チェック名称 | [チェック名称] |
+| タイミング | [タイミング] |
+
+| No | チェック項目 | 種別 | チェック詳細 | メッセージID | メッセージ引数 | メッセージ |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | （未定義） |  |  |  |  |  |

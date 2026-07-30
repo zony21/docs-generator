@@ -1,0 +1,7 @@
+.authoritative-sections { display: grid; gap: 16px; }
+.authoritative-section-card { display: grid; gap: 16px; padding: 16px; border: 1px solid #ccd6e4; border-radius: 14px; background: #fbfcfe; }
+.authoritative-section-card > .form-grid { padding-bottom: 4px; }
+.authoritative-section-card .subsection { margin-top: 2px; padding-top: 15px; }
+.authoritative-section-card .group-card { background: #fff; }
+.authoritative-section-card textarea { min-height: 88px; }
+.authoritative-section-card .group-card textarea { min-height: 110px; }

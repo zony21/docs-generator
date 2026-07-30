@@ -1,47 +1,30 @@
 # R-Layout
 
-## 1. Document metadata
-- Package: `{{FUNCTION_ID}}_{{FUNCTION_NAME}}`
-- Document: R-Layout
-- File: `sheets/R-Layout.md`
-- Generated at: {{GENERATED_AT}}
+- 元シート名: `R-Layout`
 
-## 2. Common metadata
-- System Name: {{SYSTEM_NAME}}
-- Module Name: {{MODULE_NAME}}
-- Module ID: {{MODULE_ID}}
-- Function ID: {{FUNCTION_ID}}
-- Function Name: {{FUNCTION_NAME}}
-- Date: {{DATE}}
-- Rev: {{REVISION}}
-- Doc Number: {{DOC_NUMBER}}
-- Author: {{AUTHOR}}
+## 基本情報
 
-## 3. Document summary
-- Title: {{SHEET_TITLE}}
-- Screen / component name: {{SCREEN_COMPONENT_NAME}}
-- Event / check / function name: {{EVENT_CHECK_FUNCTION_NAME}}
-- Timing: {{TIMING}}
-- Notes: {{NOTES}}
-
-## 4. Main content
-
-### 4.1 Layout blocks and areas
-| Block/Area | Description |
+| 項目 | 値 |
 | --- | --- |
-{{LAYOUT_BLOCK_ROWS}}
+| System Name | {{SYSTEM_NAME}} |
+| Module Name | {{MODULE_NAME}} |
+| Date | {{DOCUMENT_DATE}} |
+| Rev | {{DOCUMENT_REV}} |
+| Author | {{AUTHOR}} |
+| Module ID | {{MODULE_ID}} |
 
-### 4.2 Output/display item list
-| Item | Description |
-| --- | --- |
-{{OUTPUT_ITEM_ROWS}}
+## [帳票名]
 
-### 4.3 Column-level definitions
-| Item | Type | Width | Alignment | Format | Notes |
-| --- | --- | --- | --- | --- | --- |
-{{COLUMN_DEFINITION_ROWS}}
+### 帳票概要
 
-### 4.4 Rendering/output behavior notes
-{{OUTPUT_BEHAVIOR_NOTES}}
+- [帳票の用途]
+- [出力タイミング]
+- [出力形式: PDF / CSV / Excel / 印刷 / その他]
 
-{{LAYOUT_IMAGE_SECTION}}
+### 帳票項目
+
+| No | 項目名称 | 桁数 | 改頁 | グループ | 項目設定内容 | 備考 |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | [項目名] | [桁数] | [有/無] | [グループ名] | [固定値、DB項目、算出式など] | [備考] |
+
+> 帳票がない場合は `（記載なし）` とします。
